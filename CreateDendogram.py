@@ -1,11 +1,12 @@
 #This imports the python3 print function if this code is being run in python2
 from __future__ import print_function
 
+import sys
+sys.path.append(sys.argv[0].replace("CreateDendogram.py",""))
 from ETFio import LoadETFCatalogue
 from createPlotArrays import createPlotArrays
 from ReadConfig import  plotOptions
 from plotDendogram import plotDendogram
-import sys
 import numpy as np
 import os
 

@@ -28,22 +28,20 @@ def setColData(colData,mainBranchIDs=[]):
 
 	tmpColData[mainSubSel] = "r"
 
-	WWSel = colData==-2
-
-
-	tmpColData[WWSel] = "cyan"
-
-
-	tmpColData[np.invert(mainSubSel | haloSel | WWSel)]="g"
+	tmpColData[np.invert(mainSubSel | haloSel)]="g"
 
 	return tmpColData
 
 def setColDataColourbar(plotOpt,fig,colData,plotWidth,plotHeight,plotMargins):
+	"""
+	Function process the colour data for plotting and also create a colour bar
+	
+	"""
 
 	colData[colData>0] = colData[colData>0]
 
 	norm = plt.Normalize(vmin = np.min(colData), vmax = np.max(colData))
-	colors = plt.cm.ScalarMappable(norm= norm,cmap = "winter")
+	colors = plt.cm.ScalarMappable(norm= norm,cmap = plotOpt.colMap)
 
 	tmpColData = colors.to_rgba(colData)
 

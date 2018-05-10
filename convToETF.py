@@ -1,9 +1,10 @@
+import sys
+sys.path.append(sys.argv[0].replace("convToETF.py",""))
 from convTreesToETF import convVELOCIraptor,convAHFparallel,convMillenium,convRockstar
 from ETFio import WriteETFCatalogue
 from ReadConfig import  ETFoptions
 import h5py
 import os
-import sys
 
 availableConverters = ["VEL","AHF","Rock","Mill"]
 
