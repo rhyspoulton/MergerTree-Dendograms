@@ -66,7 +66,7 @@ def ReadInHaloFilesAcrossSnapshots(startSnap,endSnap,filelist,fieldsDict):
 
 	snapfilelist=open(filelist,"r")
 
-	Redshift = np.zeros(endSnap-startSnap+1,dtype=int)
+	Redshift = np.zeros(endSnap-startSnap+1,dtype=float)
 
 	for snap in range(endSnap,startSnap-1,-1):
 

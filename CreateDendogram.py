@@ -14,20 +14,6 @@ if(len(sys.argv)<5):
 	raise SystemExit("Incorrect number of arguments parsed.\n \tUsage: CreateDendogram.py <ETF file> <Num plot> <output directory> plot_config.cfg\n")
 
 
-# SelIndex = 150597  # 139360
-
-#VEL new bad: 29337
-#VEL new good: 150598
-#VEL paramset-2 good: 139336
-#VEL paramset-2 bad: 33883
-#VEL old good: 184263
-#VEL old bad: 21890
-#AHF good: 52
-#AHF bad: 42
-#Rock good: 57
-#Rock bad 41
-
-
 try:
 	nPlot = int(sys.argv[2])
 except ValueError:

@@ -37,7 +37,7 @@ def LoadVELOCIraptor(startSnap,endSnap,filename,fieldKeys):
 	# Setup a dictionary to load the data into
 	halodata = {}
 
-	Redshift = np.zeros(numsnaps,dtype=int)
+	Redshift = np.zeros(numsnaps,dtype=float)
 
 	# Lets loop over snapshot and extract the necessary data sets
 	for snap in range(startSnap,endSnap+1):
