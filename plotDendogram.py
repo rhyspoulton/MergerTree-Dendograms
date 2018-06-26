@@ -101,7 +101,7 @@ def setsizeData(plotOpt,xposData,sizeData):
 		#Lets update the max dist:
 		maxDist +=np.max(sizeData[:,0])/2.0
 
-		sizeData[:,1:]= 4 * (mainBranchSize.reshape(mainBranchSize.size,1) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/sizeData[:,0].reshape(sizeData[:,0].size,1))
+		sizeData[:,1:]= plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
 
 		sizeData[:,0] = mainBranchSize
 
