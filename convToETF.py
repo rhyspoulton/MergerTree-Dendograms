@@ -48,10 +48,14 @@ if(sys.argv[1]=="VEL"):
 		if field not in fieldsDict.values():
 			fieldsDict[field] = field
 
+	#Add an extra dataset so it is possible to tell if a halo is a WhereWolf halo
+	if(opt.WWflag):
+		fieldsDict["WWHaloFlag"] = "cNFW"
+
 	print("Loading in the fields "+ " ".join(fieldsDict.values()))
 
 	#The filename to read the data from
-	Redshift,treedata = convVELOCIraptor.convVELOCIraptorToMTF(opt.headerDict["startSnap"],opt.headerDict["endSnap"],opt.VELfilename,fieldsDict)
+	Redshift,treedata = convVELOCIraptor.convVELOCIraptorToMTF(opt.startSnap,opt.endSnap,opt.VELfilename,fieldsDict)
 
 elif(sys.argv[1]=="AHF"):
 	####################################################################################
@@ -84,7 +88,7 @@ elif(sys.argv[1]=="AHF"):
 
 	print("Loading in the fields "+ " ".join([field[0] for field in fieldsDict.values()]))
 
-	Redshift,treedata = convAHFparallel.convAHFToMTF(opt.headerDict["startSnap"],opt.headerDict["endSnap"],opt.AHFhalofilelist,opt.AHFtreefilelist,fieldsDict)
+	Redshift,treedata = convAHFparallel.convAHFToMTF(opt.startSnap,opt.endSnap,opt.AHFhalofilelist,opt.AHFtreefilelist,fieldsDict)
 
 
 elif(sys.argv[1]=="Rock"):
@@ -124,7 +128,7 @@ elif(sys.argv[1]=="Rock"):
 	redshiftColName= "scale(0)"
 
 
-	Redshift,treedata = convRockstar.convRockstarToMTF(snapColName,numProgName,redshiftColName,opt.headerDict["startSnap"] ,opt.headerDict["endSnap"],opt.Rockfilelist,fieldsDict)
+	Redshift,treedata = convRockstar.convRockstarToMTF(snapColName,numProgName,redshiftColName,opt.startSnap ,opt.endSnap,opt.Rockfilelist,fieldsDict)
 
 
 elif(sys.argv[1]=="Mill"):
@@ -152,11 +156,11 @@ elif(sys.argv[1]=="Mill"):
 	snapKey = "/haloTrees/snapshotNumber"
 	scalefactorKey = "/outputTimes/redshift"
 
-	treedata = convMillenium.convMilleniumToMTF(opt.Millfilename,opt.headerDict["Nsnaps"],snapKey,scalefactorKey,fieldsDict)
+	treedata = convMillenium.convMilleniumToMTF(opt.Millfilename,opt.Nsnaps,snapKey,scalefactorKey,fieldsDict)
 
 
 
-WriteETFCatalogue(opt,treedata,Redshift)
+WriteETFCatalogue(sys.argv[1],opt,treedata,Redshift)
 
 
 

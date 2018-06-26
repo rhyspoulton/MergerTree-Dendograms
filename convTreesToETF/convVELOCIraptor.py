@@ -19,7 +19,25 @@ def convVELOCIraptorToMTF(startSnap,endSnap,filename,fieldsDict):
 		#Loop over all the fields changing the keys to the MTF keys
 		for field in fieldsDict.keys():
 
-			treedata[snapKey][field] = halodata[snapKey].pop(fieldsDict[field]) 
+			#See if this dataset is the WWHalo Flag dataset
+			if(field=="WWHaloFlag"):
+				tmpdata = halodata[snapKey][fieldsDict[field]]
+
+				#Create a boolean dataset the same shape as the data
+				WWHaloFlag = np.zeros(tmpdata.shape,dtype=bool)
+
+				# Mark where a WW halo is present
+				WWHaloFlag[tmpdata==-1] = True
+
+				#Delete the tmp data
+				del tmpdata
+
+				treedata[snapKey][field] = WWHaloFlag
+
+			else:
+
+				# Add the dataset into the treedata
+				treedata[snapKey][field] = halodata[snapKey].pop(fieldsDict[field])
 
 	return Redshift,treedata
 

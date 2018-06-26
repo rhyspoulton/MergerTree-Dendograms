@@ -6,7 +6,30 @@ class plotOptions(object):
 
 	def __init__(self,filename,outdir):
 
+		#Lets set the defaults
 		self.outdir = outdir
+		self.maxNumBranches = 20
+		self.maxdepth = 2
+		self.plotSubhaloBranches = 1
+		self.minNsnapsExist = 10
+		self.sizePoint = 10
+		self.sizeLabel = "M$_{\rm vir}$ [10$^{10}$ M$_{\odot}$]"
+		self.maxSizeFontSize = 24
+		self.maxSizeFormat = "%.2f"
+		self.DistUnit = "Mpc"
+		self.logged = 0
+		self.plotNumRvir = 2.5
+		self.xLabel = "R$_{\rm#orbit}$/R$_{\rm#vir,parent}$"
+		self.marker = "line"
+		self.numSubplotsMain = 4
+		self.plotColorBar = 0
+		self.colMap = "winter"
+		self.cbarLabel="R$_{\rm vir}$#[Mpc]"
+		self.fileDesc = "dend"
+		self.snapoffset = 0
+		self.overplotdata = 0
+		self.insetPlot = 1
+		self.WWflag = 0
 
 		with open(filename,"r") as f:
 
@@ -43,6 +66,12 @@ class plotOptions(object):
 
 				elif(line[0]=="maxSizeFormat"):
 					self.maxSizeFormat = line[1]
+
+				elif(line[0]=="maxSizeFontSize"):
+					self.maxSizeFontSize = int(line[1])
+
+				elif(line[0]=="DistUnit"):
+					self.DistUnit = line[1]
 
 				elif(line[0]=="logged"):
 					self.logged = int(line[1])
@@ -83,6 +112,9 @@ class plotOptions(object):
 				elif(line[0]=="insetPlot"):
 					self.insetPlot = int(line[1])
 
+				elif(line[0]=="WWflag"):
+					self.WWflag = int(line[1])
+
 				else:
 					raise OSError("Invalid config option %s, please only use the options in the sample config file" %line[0])
 
@@ -91,7 +123,25 @@ class ETFoptions(object):
 
 	def __init__(self,MTF,filename):
 
-		self.headerDict = {}
+		#Set the defaults
+		self.startSnap = 0
+		self.endSnap = 0
+		self.Nsnaps = 0
+		self.Munit = 1
+		self.h = 0.6751
+		self.boxsize = 0
+		self.HALOIDVAL = 1000000000000
+		self.outfilename = MTF
+		self.MassDef = ""
+		self.RDef = ""
+		self.ExtraFields = []
+		self.ExtraFieldsDtype = []
+		self.VELfilename = ""
+		self.WWflag = 0
+		self.AHFhalofilelist = ""
+		self.AHFtreefilelist = ""
+		self.Rockfilelist = ""
+		self.Millfilename = ""
 
 		with open(filename,"r") as f:
 
@@ -108,25 +158,25 @@ class ETFoptions(object):
 				line = line.split("=")
 
 				if(line[0]=="startSnap"):
-					self.headerDict["startSnap"] = int(line[1])
+					self.startSnap = int(line[1])
 
 				elif(line[0]=="endSnap"):
-					self.headerDict["endSnap"] = int(line[1])
+					self.endSnap = int(line[1])
 
 				elif(line[0]=="Nsnaps"):
-					self.headerDict["Nsnaps"] = int(line[1])
+					self.Nsnaps = int(line[1])
 
 				elif(line[0]=="Munit"):
-					self.headerDict["Munit"] = float(line[1])
+					self.Munit = float(line[1])
 
 				elif(line[0]=="h"):
-					self.headerDict["h"] = float(line[1])
+					self.h = float(line[1])
 
 				elif(line[0]=="boxsize"):
-					self.headerDict["boxsize"] = float(line[1])
+					self.boxsize = float(line[1])
 
 				elif(line[0]=="HALOIDVAL"):
-					self.headerDict["HALOIDVAL"] = np.uint64(line[1])
+					self.HALOIDVAL = np.uint64(line[1])
 
 				elif(line[0]=="outfilename"):
 					self.outfilename = line[1]
@@ -140,20 +190,20 @@ class ETFoptions(object):
 				elif(line[0]=="ExtraFields"):
 					if(line[1]):
 						self.ExtraFields = line[1].split(",")
-					else:
-						self.ExtraFields = []
+
 
 				elif(line[0]=="ExtraFieldsDtype"):
 					if(line[1]):
 						self.ExtraFieldsDtype = line[1].split(",")
-					else:
-						self.ExtraFieldsDtype = []
 
 				# VELOCIraptor specifics
 
 				elif(line[0]=="VELfilename"):
 					if(MTF=="VEL"):
 						self.VELfilename = line[1]
+
+				elif(line[0]=="WWflag"):
+					self.WWflag = int(line[1])
 
 				# AHF specifics
 

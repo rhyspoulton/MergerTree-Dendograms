@@ -11,18 +11,14 @@ import time
 
 
 
-def setColData(colData,mainBranchIDs=[]):
+
+def setColData(plotOpt,colData,mainBranchIDs=[]):
 	"""
 	This function processes the colour data into colours for plotting 
 
 	"""
 
-	# MainBranchIDs = np.fromfile()
-
-	tmpColData = np.empty(colData.shape,dtype="str")
-
-	# tmpColData[colData==0] = "b"
-	# tmpColData[colData>0] = "r"
+	tmpColData = np.empty(colData.shape,dtype=object)
 
 	haloSel = colData==-1
 	tmpColData[colData==-1] = "b"
@@ -31,7 +27,16 @@ def setColData(colData,mainBranchIDs=[]):
 
 	tmpColData[mainSubSel] = "r"
 
-	tmpColData[np.invert(mainSubSel | haloSel)]="g"
+	#Check if the WWflag is set if so then need to find which halos are WW halos
+	if(plotOpt.WWflag):
+		WWSel = colData==-2
+
+		tmpColData[WWSel] = "cyan"
+
+		tmpColData[np.invert(mainSubSel | haloSel | WWSel)]="g"
+
+	else:
+		tmpColData[np.invert(mainSubSel | haloSel)]="g"
 
 	return tmpColData
 
@@ -64,11 +69,15 @@ def setColDataColourbar(plotOpt,fig,colData,plotWidth,plotHeight,plotMargins):
 
 
 
-def setsizeData(plotOpt,sizeData):
+def setsizeData(plotOpt,xposData,sizeData,mainBranchRadius):
 	"""
 	This function sets the scale for the size data
 
 	"""
+
+	#Find the maximum distance for the branch of interest
+	maxDist = np.max(xposData[:,0])
+
 	if(plotOpt.logged):
 		minSize = np.min(sizeData[sizeData>0])
 
@@ -86,15 +95,27 @@ def setsizeData(plotOpt,sizeData):
 		#Normalize the size data to this max size
 		sizeData = sizeData/maxSize
 
-		#Multiply by the size of point desired
-		sizeData=np.multiply(plotOpt.sizePoint,sizeData,casting="unsafe",dtype="float64")
+		#Multiply by the size of points in the branch of interest, time by 1.4 so it takes up approixmatley 80% of the plot
+		sizeData[:,0]=1.4 * np.multiply(maxDist,sizeData[:,0],casting="unsafe",dtype="float64")
+
+		#Lets update the max dist:
+		maxDist +=np.max(sizeData[:,0])/2.0
+
+		#How many plotNumRvir * Rvir this distance is
+		ratio = maxDist / (plotOpt.plotNumRvir)
+
+		#Find the ratio which need to scale the rest of the points by
+		scale =   1.4 * ratio * plotOpt.numSubplotsMain #/ (np.max(sizeData[:,0])/maxDist)
+
+		# scale = (0.8 / plotOpt.numSubplotsMain) * plotOpt.plotNumRvir 
+
+		sizeData[:,1:]*=scale
+
+	return sizeData,maxDist
 
 
-	return sizeData
 
-
-
-def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID,mainBranchIDs):
+def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID,mainBranchIDs,mainBranchRadius):
 
 	print("Plotting the tree")
 	start = time.time()
@@ -182,15 +203,19 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 		else:
 			print("The inset plot cannot be plotted as there are less than 4 branches")
 
-	plotData["SizeData"] = setsizeData(plotOpt,plotData["SizeData"])
+
+	#Find the maximum distance for the branch of interests
+
+	plotData["SizeData"],maxDist = setsizeData(plotOpt,plotData["xposData"],plotData["SizeData"],mainBranchRadius)
 
 
 	# Set the col and size data from the functions
 	if(plotOpt.plotColorBar):
 		plotData["ColData"]=setColDataColourbar(plotOpt,fig,plotData["ColData"],plotWidth,plotHeight,plotMargins)
 	else:
-		plotData["ColData"] = setColData(plotData["ColData"],mainBranchIDs)
+		plotData["ColData"] = setColData(plotOpt,plotData["ColData"],mainBranchIDs)
 
+	#Tempory fix to suppress warning when the colour bar only has 2 colours
 	maxdepth = np.max(depthIndicator[:numBranches]) +1
 	#make a colorbar showing the depth of the branches
 	cmap = plt.get_cmap("gnuplot", maxdepth)
@@ -199,8 +224,6 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	prog_colors = plt.cm.ScalarMappable(norm= norm,cmap =cmap)
 	prog_colors.set_array([])
 
-	#Find the maximum dist for the halos position + size
-	maxDist = np.max(plotData["xposData"][:,0]) + np.max(plotData["SizeData"][:,0])/2
 
 	#Add colorbar for the depth of the branch
 	cbaxes = fig.add_axes([0.25 , 0.035,4/plotWidth,0.02])
@@ -219,7 +242,6 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	ibranchSel=0
 
-
 	for i in range(numBranches):
 
 		#Find where the data is non-zero for this branch these will be the snapshots
@@ -234,10 +256,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 			for snap in snaps:
 
-				if(plotOpt.logged):
-					width = plotData["SizeData"][:,i][snap] + np.log10(maxDist/plotOpt.plotNumRvir) if(i>0) else plotData["SizeData"][:,i][snap]
-				else:
-					width = plotData["SizeData"][:,i][snap] * maxDist/plotOpt.plotNumRvir*2 if(i>0) else plotData["SizeData"][:,i][snap]
+				width = plotData["SizeData"][:,i][snap]
 				xi = plotData["xposData"][:,i][snap] - width/2
 				yi = snap - 0.5 +plotOpt.snapoffset
 				height = 1
@@ -258,7 +277,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 		
 		if(plotOpt.overplotdata):
 			for snap in snaps:
-				axes[i].text(0,snap - 0.5 + plotOpt.snapoffset,plotOpt.overplotFormat %(plotData["OverPlotData"][:,i][snap]),fontsize=8)
+				axes[i].text(0,snap - 0.5 + plotOpt.snapoffset,plotOpt.overplotFormat %(plotData["OverPlotData"][:,i][snap]),fontsize=6)
 			
 
 		if((i!=(numBranches-1)) & (i>0)):
@@ -331,7 +350,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 		# ax3.set_xlim(ax.get_xlim())
 		ax2.set_xticks([])
 		# ax3.set_xticks([])
-		ax2.set_xlabel(plotOpt.maxSizeFormat %(maxBranchSize[i]),fontsize = 24, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
+		ax2.set_xlabel(plotOpt.maxSizeFormat %(maxBranchSize[i]),fontsize = plotOpt.maxSizeFontSize, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
 		if(i==0):
 			ax2.xaxis.set_label_coords(0.7, 1.07)
 		# new_fixed_axis = ax3.get_grid_helper().new_fixed_axis
@@ -344,24 +363,24 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 			ibranchSel+=1
 
 	#Add a box around the maximum size data and a label
-	patch = Rectangle((0.001,0.95),0.983,0.03,fill=False,transform=fig.transFigure,clip_on=False,lw=2)
+	patch = Rectangle((0.001,0.95),0.985,0.03,fill=False,transform=fig.transFigure,clip_on=False,lw=2)
 	axes[0].add_patch(patch)
-	axes[0].text(-0.35,1.07,plotOpt.sizeLabel,fontsize=23,transform=axes[0].transAxes)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=1))
+	axes[0].text(-0.25,1.07,plotOpt.sizeLabel,fontsize=plotOpt.maxSizeFontSize,transform=axes[0].transAxes)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=1))
 
 	#Add the labels to the main branch of interest
 	axes[0].set_ylabel("Snapshot",fontsize=25)
-	axes[0].set_xlabel("Euclidean distance [Mpc]",fontsize=25)
+	axes[0].set_xlabel("Euclidean distance [%s]" %(plotOpt.DistUnit),fontsize=25)
 	axes[0].margins(x=0.0)
 	axes[0].set_xlim(0,maxDist)
-	# for label in axes[i].xaxis.get_ticklabels()[::2]: label.set_visible(False)
-	axes[0].set_xticks(np.arange(0,maxDist,1,dtype=int))
+	for label in axes[i].xaxis.get_ticklabels()[::2]: label.set_visible(False)
+	# axes[0].set_xticks(np.arange(0,maxDist,1,dtype=int))
 
 	#Add the sub plot if desired and there are more than 4 branches
 	if((numBranches>=4) & (plotOpt.insetPlot)):
 		if(plotOpt.plotColorBar):
-			inset = fig.add_axes([0.694,0.245,0.26,0.2])
+			inset = fig.add_axes([0.65,0.245,0.2,0.2])
 		else:
-			inset = fig.add_axes([0.694,0.245,0.29,0.2])
+			inset = fig.add_axes([0.65,0.245,0.32,0.2])
 
 		for sel in range(4):
 			snap = np.where(insetData[:,sel]>0)[0] 
@@ -378,8 +397,15 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	#Save the file
 	outfile = plotOpt.outdir+"/%i_mergertree." %(SelID)+plotOpt.fileDesc+".png"
-	plt.savefig(outfile)
 
+
+
+	#Need to increase the resolution when putting the data over the plot
+	if(plotOpt.overplotdata): 
+		plt.savefig(outfile,dpi=150)
+
+	else:
+		plt.savefig(outfile)
 	#Close the plot
 	plt.close(fig)
 

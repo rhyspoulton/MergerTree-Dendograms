@@ -11,7 +11,7 @@ except NameError:
 
 
 
-def WriteETFCatalogue(opt,treedata,Redshift):
+def WriteETFCatalogue(format,opt,treedata,Redshift):
 	####################################################################################
 
 
@@ -26,23 +26,47 @@ def WriteETFCatalogue(opt,treedata,Redshift):
 
 	hdffile = h5py.File(filename,"w")
 
+	#Create the header
 	headergroup = hdffile.create_group("Header")
 
-	for key in opt.headerDict.keys():
-		headergroup.attrs[key]  = opt.headerDict[key]
+	#Add the options form the config into the header
+	headergroup.attrs["startSnap"] = opt.startSnap
+	headergroup.attrs["endSnap"] = opt.endSnap
+	headergroup.attrs["Nsnaps"] = opt.Nsnaps
+	headergroup.attrs["Munit"] = opt.Munit
+	headergroup.attrs["h"] = opt.h
+	headergroup.attrs["boxsize"] = opt.boxsize
+	headergroup.attrs["HALOIDVAL"] = opt.HALOIDVAL
+	headergroup.attrs["MassDef"] = opt.MassDef
+	headergroup.attrs["RDef"] = opt.RDef
 
+	#Add to the header which file the data is from
+	if(format=="VEL"):
 
-	for snap in range(opt.headerDict["startSnap"],opt.headerDict["endSnap"]+1):
+		headergroup.attrs["VELfilename"] = opt.VELfilename
+		headergroup.attrs["WWflag"] = opt.WWflag
+
+	elif(format=="AHF"):
+
+		headergroup.attrs["AHFhalofilelist"] = opt.AHFhalofilelist
+		headergroup.attrs["AHFtreefilelist"] = opt.AHFtreefilelist
+
+	elif(format=="Rock"):
+
+		headergroup.attrs["Rockfilelist"] = opt.Rockfilelist
+
+	#Create a snapshot group
+	for snap in range(opt.startSnap,opt.endSnap+1):
 
 		snapKey = "Snap_%03d" %snap
 
-		isnap = snap - opt.headerDict["startSnap"]
+		isnap = snap - opt.startSnap
 
 		snapgroup = hdffile.create_group("Snap_%03d" %(snap))
 
 		snapgroup.attrs["Redshift"] = Redshift[isnap]
 
-
+		#Put all the data in the snapshot group.
 		for key in treedata[snapKey].keys():
 
 			snapgroup.create_dataset(key,data =treedata[snapKey][key])
@@ -88,7 +112,12 @@ def LoadETFCatalogue(filename,plotOpt):
 
 	treedata = {splitSnapKey %snap:{} for snap in range(opt.startSnap,opt.endSnap+1)}
 
-	requiredDatasets = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","Pos","HostHaloID","Radius"]
+
+	#Lets see if the WWflag is set
+	if(plotOpt.WWflag):
+		requiredDatasets = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","Pos","HostHaloID","Radius","WWHaloFlag"]
+	else:
+		requiredDatasets = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","Pos","HostHaloID","Radius"]
 
 	# Lets check if the required datasets exist in the catalogue file for every snapshot
 	for snap in range(opt.startSnap,opt.endSnap+1):

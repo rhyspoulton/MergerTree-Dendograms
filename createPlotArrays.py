@@ -262,7 +262,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 	AllRootProgenitors, AllBranchIndicators = getRootProgenitors(opt,treedata,SelIndex)
 
 	if(len(AllRootProgenitors)==0):
-		return [],[],[],[],[]
+		return [],[],[],[],[],[]
 
 
 	start = time.time()
@@ -298,14 +298,13 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 	for ibranch in range(numBranches):
 		#Extract the Root Progenitor for this branch
 		haloID = AllRootProgenitors[ibranch]
-
 		
 		#Move up the branch setting the plotting data as we go
 		while(True):
-
 			#Extract the information for this halo
 			index = int(haloID%opt.HALOIDVAL-1)
 			snap = int(haloID/opt.HALOIDVAL)
+
 
 			snapKey = "Snap_%03d" %snap
 			isnap = snap - opt.startSnap
@@ -324,10 +323,14 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 			#Store its descendant
 			descendant = treedata[snapKey]["Descendant"][index]
 
-
 			#Set the size and col data to what was requested
 			plotData["SizeData"][isnap,ibranch] = treedata[snapKey]["SizeData"][index]
-			plotData["ColData"][isnap,ibranch] = treedata[snapKey]["ColData"][index]
+
+			if(plotOpt.WWflag):
+				plotData["ColData"][isnap,ibranch] = -2 if(treedata[snapKey]["WWHaloFlag"][index]) else treedata[snapKey]["ColData"][index]
+			else:
+				plotData["ColData"][isnap,ibranch] = treedata[snapKey]["ColData"][index]
+
 			if(plotOpt.overplotdata):
 					plotData["OverPlotData"][isnap,ibranch] = treedata[snapKey]["OverPlotData"][index]
 
@@ -335,7 +338,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 			if(ibranch==0):
 				#Store both its position and Radius
 				mainBranchPos[isnap,:] = pos
-				mainBranchRadius[isnap] = treedata[snapKey]["Radius"][index] #cosFuncs.coshaloMvirToRvir(treedata[snapKey]["Mass"][index],Munit = opt.Munit,z= treedata[snapKey]["Redshift"])
+				mainBranchRadius[isnap] = cosFuncs.coshaloMvirToRvir(treedata[snapKey]["Mass"][index],Munit = opt.Munit,z= treedata[snapKey]["Redshift"]) 
 				#If at the root progenitor then store its start position and set its position to be small (non-zero)
 				if(haloID==AllRootProgenitors[ibranch]):
 					startpos[:] = pos
@@ -403,7 +406,6 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 
 						
 						if(sel==ibranch):
-							print(ibranch,snapKey,haloID,descProgenitor,descendant,branchRootTail,treedata[descSnapKey]["RootDescendant"][descIndex],treedata[snapKey]["RootDescendant"][index],treedata[descSnapKey]["RootProgenitor"][descIndex],treedata[snapKey]["RootProgenitor"][index],treedata[descSnapKey][sizeData][descIndex],treedata[descSnapKey]["HostHaloID"][descIndex])
 							#raise SystemExit("Something has gone wrong in the construction of the tree")
 							break
 
@@ -474,7 +476,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 
 	# else:
 	
-	return plotData,AllBranchIndicators,depthIndicator,sortIndx,mainBranchIDs
+	return plotData,AllBranchIndicators,depthIndicator,sortIndx,mainBranchIDs,mainBranchRadius
 
 
 
