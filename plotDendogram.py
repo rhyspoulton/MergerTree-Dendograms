@@ -96,18 +96,14 @@ def setsizeData(plotOpt,xposData,sizeData):
 		sizeData = sizeData/maxSize
 
 		#Multiply by the size of points in the branch of interest, time by 1.4 so it takes up approixmatley 80% of the plot
-		sizeData[:,0]=1.4 * np.multiply(maxDist,sizeData[:,0],casting="unsafe",dtype="float64")
+		mainBranchSize = np.multiply(maxDist,sizeData[:,0],casting="unsafe",dtype="float64")
 
 		#Lets update the max dist:
 		maxDist +=np.max(sizeData[:,0])/2.0
 
-		#How many plotNumRvir * Rvir this distance is
-		ratio = maxDist / (plotOpt.plotNumRvir)
+		sizeData[:,1:]= 4 * (mainBranchSize.reshape(mainBranchSize.size,1) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/sizeData[:,0].reshape(sizeData[:,0].size,1))
 
-		#Find the ratio which need to scale the rest of the points by
-		scale =   1.4 * ratio * plotOpt.numSubplotsMain #/ (np.max(sizeData[:,0])/maxDist)
-
-		sizeData[:,1:]*=scale
+		sizeData[:,0] = mainBranchSize
 
 	return sizeData,maxDist
 
@@ -131,6 +127,10 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	depthIndicator = depthIndicator[sel]
 	branchIndicator = branchIndicator[sel]
 	sortIndx = sortIndx[sel]
+
+	if(plotData["xposData"].shape[1] ==1):
+		raise Exception("After requiring that the halos exist for %i snaps there is only the main branch left, \nThis can also occur because the units are not correct please check this." %plotOpt.minNsnapsExist)
+
 	
 
 	#Lets remove branches that never appear in the plot
@@ -143,6 +143,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	depthIndicator = depthIndicator[sel]
 	branchIndicator = branchIndicator[sel]
 	sortIndx = sortIndx[sel]
+
 
 	#Now we will see if any of the deeper branches merging branch has been removed, if so we will remove those from the plot
 	sel = (np.in1d(branchIndicator,sortIndx)) | (branchIndicator<0)
@@ -161,8 +162,8 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	#Find the number of branches left and the first and final snapshot in the data
 	numBranches = plotData["xposData"].shape[1] 
-	if(numBranches==1):
-		raise Exception("After requiring that the halos exist for %i snaps there is only the main branch left, \nThis can also occur because the units are not correct please check this." %plotOpt.minNsnapsExist)
+	if(numBranches ==1):
+		raise Exception("After removing all branches that do not exist in the plot there is only the main branch left. \nThis can happen due to incorrect units.")
 
 	fsnap = plotData["xposData"].shape[0] -1 +plotOpt.snapoffset
 	isnap = np.where(np.count_nonzero(plotData["xposData"],axis=1) > 0)[0][0] -10 + plotOpt.snapoffset

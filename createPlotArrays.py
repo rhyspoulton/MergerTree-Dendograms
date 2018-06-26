@@ -338,7 +338,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 			if(ibranch==0):
 				#Store both its position and Radius
 				mainBranchPos[isnap,:] = pos
-				mainBranchRadius[isnap] = cosFuncs.coshaloMvirToRvir(treedata[snapKey]["Mass"][index],Munit = opt.Munit,z= treedata[snapKey]["Redshift"]) 
+				mainBranchRadius[isnap] = treedata[snapKey]["Radius"][index]
 				#If at the root progenitor then store its start position and set its position to be small (non-zero)
 				if(haloID==AllRootProgenitors[ibranch]):
 					startpos[:] = pos
