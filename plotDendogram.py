@@ -69,7 +69,7 @@ def setColDataColourbar(plotOpt,fig,colData,plotWidth,plotHeight,plotMargins):
 
 
 
-def setsizeData(plotOpt,xposData,sizeData,mainBranchRadius):
+def setsizeData(plotOpt,xposData,sizeData):
 	"""
 	This function sets the scale for the size data
 
@@ -107,15 +107,13 @@ def setsizeData(plotOpt,xposData,sizeData,mainBranchRadius):
 		#Find the ratio which need to scale the rest of the points by
 		scale =   1.4 * ratio * plotOpt.numSubplotsMain #/ (np.max(sizeData[:,0])/maxDist)
 
-		# scale = (0.8 / plotOpt.numSubplotsMain) * plotOpt.plotNumRvir 
-
 		sizeData[:,1:]*=scale
 
 	return sizeData,maxDist
 
 
 
-def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID,mainBranchIDs,mainBranchRadius):
+def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID,mainBranchIDs):
 
 	print("Plotting the tree")
 	start = time.time()
@@ -206,7 +204,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	#Find the maximum distance for the branch of interests
 
-	plotData["SizeData"],maxDist = setsizeData(plotOpt,plotData["xposData"],plotData["SizeData"],mainBranchRadius)
+	plotData["SizeData"],maxDist = setsizeData(plotOpt,plotData["xposData"],plotData["SizeData"])
 
 
 	# Set the col and size data from the functions

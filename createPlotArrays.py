@@ -476,7 +476,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 
 	# else:
 	
-	return plotData,AllBranchIndicators,depthIndicator,sortIndx,mainBranchIDs,mainBranchRadius
+	return plotData,AllBranchIndicators,depthIndicator,sortIndx,mainBranchIDs
 
 
 

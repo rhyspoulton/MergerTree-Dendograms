@@ -37,10 +37,10 @@ indexes=np.argsort(halodata[endSnap]["Mass"])[::-1][:nPlot][::-1]
 #Loop over all the indexes producing dendograms
 for SelIndex in indexes:
 
-	plotData,branchIndicator,depthIndicator,sortIndx,mainBranchIDs,mainBranchRadius = createPlotArrays(opt,plotOpt,halodata,SelIndex)
+	plotData,branchIndicator,depthIndicator,sortIndx,mainBranchIDs = createPlotArrays(opt,plotOpt,halodata,SelIndex)
 
 	#Check if there is anythin to plot
 	if(len(branchIndicator)==0):
 		continue
 
-	plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,halodata["Snap_%03d" %opt.endSnap]["HaloID"][SelIndex],mainBranchIDs,mainBranchRadius)
+	plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,halodata["Snap_%03d" %opt.endSnap]["HaloID"][SelIndex],mainBranchIDs)
