@@ -619,7 +619,7 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 		snapKey = "Snap_%03d" %snap
 
 		MTFdata[snapKey]["Mass"] = halodata[snapKey]["Mass"]
-		MTFdata[snapKey]["Rvir"] = halodata[snapKey]["Rvir"]
+		MTFdata[snapKey]["Radius"] = halodata[snapKey]["Radius"]
 		MTFdata[snapKey]["Pos"] = halodata[snapKey]["Pos"]
 		for extraField in extraFields:
 				MTFdata[snapKey][extraField]  = halodata[snapKey][extraField]
