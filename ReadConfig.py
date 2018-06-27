@@ -12,7 +12,7 @@ class plotOptions(object):
 		self.maxdepth = 2
 		self.plotSubhaloBranches = 1
 		self.minNsnapsExist = 10
-		self.sizePoint = 10
+		self.showBranchTypeLabel = 1
 		self.sizeLabel = "M$_{\rm vir}$ [10$^{10}$ M$_{\odot}$]"
 		self.maxSizeFontSize = 24
 		self.maxSizeFormat = "%.2f"
@@ -57,8 +57,8 @@ class plotOptions(object):
 				elif(line[0]=="minNsnapsExist"):
 					self.minNsnapsExist = int(line[1])
 
-				elif(line[0]=="sizePoint"):
-					self.sizePoint = float(line[1])
+				elif(line[0]=="showBranchTypeLabel"):
+					self.showBranchTypeLabel = int(line[1])
 
 				elif(line[0]=="sizeLabel"):
 					self.sizeLabel = line[1].replace("#"," ")

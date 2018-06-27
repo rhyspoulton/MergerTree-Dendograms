@@ -212,30 +212,45 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	else:
 		plotData["ColData"] = setColData(plotOpt,plotData["ColData"],mainBranchIDs)
 
-	#Tempory fix to suppress warning when the colour bar only has 2 colours
+	#Find the maximum depth of the branches
 	maxdepth = np.max(depthIndicator[:numBranches]) +1
-	#make a colorbar showing the depth of the branches
-	cmap = plt.get_cmap("gnuplot", maxdepth)
-	c = np.arange(1,maxdepth+1,1)
-	norm = BoundaryNorm(c,maxdepth)
-	prog_colors = plt.cm.ScalarMappable(norm= norm,cmap =cmap)
-	prog_colors.set_array([])
 
+	#Find the range of colors needed for the maxdepth if
+	#there are more than 2 colors otherwise this will give
+	#a warning/ error
+	if(maxdepth>2):
+		#make a colorbar showing the depth of the branches
+		cmap = plt.get_cmap("gnuplot", maxdepth)
+		c = np.arange(1,maxdepth+1,1)
+		norm = BoundaryNorm(c,maxdepth)
+		prog_colors = plt.cm.ScalarMappable(norm= norm,cmap =cmap)
+		prog_colors.set_array([])
 
-	#Add colorbar for the depth of the branch
-	cbaxes = fig.add_axes([0.25 , 0.035,4/plotWidth,0.02])
-	cb = fig.colorbar(prog_colors,cax=cbaxes,ticks=c,orientation="horizontal")
-	cb.set_ticks(c + 0.5)
-	cb.set_ticklabels(c)
-	cb.ax.tick_params(labelsize=25)
-	cb.ax.set_title("Merged branch depth",fontsize=30)
+	# See if a label showing the branch type is to be plotted
+	if(plotOpt.showBranchTypeLabel):
+		#Add colorbar for the depth of the branch
+		cbaxes = fig.add_axes([0.25 , 0.035,4/plotWidth,0.02])
 
-	#Axis for the interacting branch
-	newaxis = fig.add_axes([0.75 , 0.035, (4/plotWidth)/plotOpt.maxdepth+0.03,0.02])
-	newaxis.set_facecolor("green")
-	newaxis.set_xticks([])
-	newaxis.set_yticks([])
-	newaxis.set_title("Interacting branch",fontsize=30)
+		#If there are 2 or more colors lets plot a colorbar
+		if(maxdepth>2):
+			cb = fig.colorbar(prog_colors,cax=cbaxes,ticks=c,orientation="horizontal")
+			cb.set_ticks(c + 0.5)
+			cb.set_ticklabels(c)
+
+		else:
+			cbaxes.set_facecolor("black")
+			cbaxes.set_yticks([])
+			cbaxes.set_xticks([0.5])
+			cbaxes.set_xticklabels([1])
+		cbaxes.tick_params(labelsize=25)
+		cbaxes.set_title("Merged branch depth",fontsize=30)
+
+		#Axis for the interacting branch
+		newaxis = fig.add_axes([0.75 , 0.035, (4/plotWidth)/plotOpt.maxdepth+0.03,0.02])
+		newaxis.set_facecolor("green")
+		newaxis.set_xticks([])
+		newaxis.set_yticks([])
+		newaxis.set_title("Interacting branch",fontsize=30)
 
 	ibranchSel=0
 
@@ -276,29 +291,29 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 			for snap in snaps:
 				axes[i].text(0,snap - 0.5 + plotOpt.snapoffset,plotOpt.overplotFormat %(plotData["OverPlotData"][:,i][snap]),fontsize=6)
 			
-
+		col = prog_colors.to_rgba(depthIndicator[i]) if(maxdepth>2) else "black"
 		if((i!=(numBranches-1)) & (i>0)):
 			if(branchIndicator[i]==0):
-				axes[i].scatter(plotOpt.plotNumRvir/2.0,isnap+5,s=2000,color=prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].scatter(plotOpt.plotNumRvir/2.0,isnap+5,s=2000,color=col)
 			elif((depthIndicator[i]==1) & (depthIndicator[i+1]>1)):
-				axes[i].fill_between([0.5,plotOpt.plotNumRvir],isnap,isnap+10,color=prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.5,plotOpt.plotNumRvir],isnap,isnap+10,color=col)
 			elif((depthIndicator[i]>1) & (depthIndicator[i+1]<2)):
-				axes[i].fill_between([0.0,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.0,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=col)
 			elif((depthIndicator[i]>1) & (depthIndicator[i+1]>1)):
-				axes[i].fill_between([0.0,plotOpt.plotNumRvir],isnap,isnap+10,color = prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.0,plotOpt.plotNumRvir],isnap,isnap+10,color = col)
 			elif((depthIndicator[i]==-1) & (depthIndicator[i+1]>1)):
 				axes[i].fill_between([0.5,plotOpt.plotNumRvir],isnap,isnap+10,color="green")
 			elif(depthIndicator[i]==-1):
 				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color="green")
 			else:
-				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=col)
 		elif(i>0):
 			if(depthIndicator[i]>1):
-				axes[i].fill_between([0.0,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color = prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.0,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color = col)
 			elif(depthIndicator[i]<0):
 				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color="green")
 			else:
-				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=prog_colors.to_rgba(depthIndicator[i]))
+				axes[i].fill_between([0.5,plotOpt.plotNumRvir-0.5],isnap,isnap+10,color=col)
 
 		#Set ylim and the ticks
 		axes[i].set_ylim(isnap,fsnap)
@@ -313,18 +328,18 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 		#Add a dashed line ar 1 Rvir if not on the main branch and set the ylim to 2.5
 		if(i>0):
-				axes[i].text(plotOpt.plotNumRvir/2.0 - 0.5,fsnap+numsnaps *0.01,"%i" %i,fontsize=30, weight = 'bold')
-				axes[i].axvline(1,ls="dashed")
-				axes[i].set_xlim(0,plotOpt.plotNumRvir)
-				axes[i].set_xticks(np.arange(1,plotOpt.plotNumRvir,1))
-				axes[i].set_yticklabels(['']*len(yticks))
+			axes[i].text(plotOpt.plotNumRvir/2.0 - 0.5,fsnap+numsnaps *0.01,"%i" %i,fontsize=30, weight = 'bold')
+			axes[i].axvline(1,ls="dashed")
+			axes[i].set_xlim(0,plotOpt.plotNumRvir)
+			axes[i].set_xticks(np.arange(1,plotOpt.plotNumRvir,1))
+			axes[i].set_yticklabels(['']*len(yticks))
 
 		#Connect up the the points
 		for j in range(len(x)-1):
-				if((numBranches>=4) & (i in branchSel) & (plotOpt.insetPlot)):
-					axes[i].plot(x,y,lw=4,ls=insetLS[ibranchSel] ,color=insetCol[ibranchSel])
-				else: 
-					axes[i].plot((x[j],x[j+1]),(y[j],y[j+1]),lw=2, color="black")
+			if((numBranches>=4) & (i in branchSel) & (plotOpt.insetPlot)):
+				axes[i].plot(x,y,lw=4,ls=insetLS[ibranchSel] ,color=insetCol[ibranchSel])
+			else:
+				axes[i].plot((x[j],x[j+1]),(y[j],y[j+1]),lw=2, color="black")
 
 		if(branchIndicator[i]==-3):
 			x = x[-1]
@@ -347,9 +362,12 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 		# ax3.set_xlim(ax.get_xlim())
 		ax2.set_xticks([])
 		# ax3.set_xticks([])
-		ax2.set_xlabel(plotOpt.maxSizeFormat %(maxBranchSize[i]),fontsize = plotOpt.maxSizeFontSize, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
+
 		if(i==0):
-			ax2.xaxis.set_label_coords(0.7, 1.07)
+			label = plotOpt.sizeLabel + "     " + plotOpt.maxSizeFormat %(maxBranchSize[i])
+		else:
+			label = plotOpt.maxSizeFormat %(maxBranchSize[i])
+		ax2.set_xlabel(label,fontsize = plotOpt.maxSizeFontSize, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
 		# new_fixed_axis = ax3.get_grid_helper().new_fixed_axis
 		# ax3.axis["top"] = new_fixed_axis(loc="top",axes=ax3,offset=(0, offset))
 		# ax3.axis["top"].toggle(all=True)
@@ -362,15 +380,12 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	#Add a box around the maximum size data and a label
 	patch = Rectangle((0.001,0.95),0.998,0.03,fill=False,transform=fig.transFigure,clip_on=False,lw=2)
 	axes[0].add_patch(patch)
-	axes[0].text(-0.25,1.07,plotOpt.sizeLabel,fontsize=plotOpt.maxSizeFontSize,transform=axes[0].transAxes)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=1))
 
 	#Add the labels to the main branch of interest
 	axes[0].set_ylabel("Snapshot",fontsize=25)
 	axes[0].set_xlabel("Euclidean distance [Mpc]",fontsize=25)
 	axes[0].margins(x=0.0)
 	axes[0].set_xlim(0,maxDist)
-	for label in axes[i].xaxis.get_ticklabels()[::2]: label.set_visible(False)
-	# axes[0].set_xticks(np.arange(0,maxDist,1,dtype=int))
 
 	#Add the sub plot if desired and there are more than 4 branches
 	if((numBranches>=4) & (plotOpt.insetPlot)):
@@ -394,7 +409,6 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	#Save the file
 	outfile = plotOpt.outdir+"/%i_mergertree." %(SelID)+plotOpt.fileDesc+".png"
-
 
 
 	#Need to increase the resolution when putting the data over the plot
