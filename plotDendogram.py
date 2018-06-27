@@ -87,7 +87,6 @@ def setsizeData(plotOpt,xposData,sizeData):
 
 		sizeData=np.multiply(plotOpt.sizePoint,sizeData,casting="unsafe",dtype="float64")
 
-
 	else:
 		#Find maximum for the data 
 		maxSize = np.max(sizeData)
@@ -116,9 +115,9 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 	#Remove branches that live for less than the minimum number of snaps and remove branches deeper than maxdepth
 	if(plotOpt.plotSubhaloBranches):
-		sel = np.where(((np.count_nonzero(plotData["xposData"],axis=0) >= plotOpt.minNsnapsExist) & (depthIndicator<plotOpt.maxdepth)) | (depthIndicator<2))[0]
+		sel = np.where(((np.count_nonzero(plotData["xposData"],axis=0) >= plotOpt.minNsnapsExist) & (depthIndicator<=plotOpt.maxdepth)) | (depthIndicator<2))[0]
 	else:
-		sel = np.where(((np.count_nonzero(plotData["xposData"],axis=0) >= plotOpt.minNsnapsExist) & (depthIndicator<plotOpt.maxdepth) & (depthIndicator>-1)) | (depthIndicator<2))[0]
+		sel = np.where(((np.count_nonzero(plotData["xposData"],axis=0) >= plotOpt.minNsnapsExist) & (depthIndicator<=plotOpt.maxdepth) & (depthIndicator>-1)) | (depthIndicator<2))[0]
 	plotData["xposData"] = plotData["xposData"][:,sel]
 	plotData["SizeData"] = plotData["SizeData"][:,sel]
 	plotData["ColData"] = plotData["ColData"][:,sel]

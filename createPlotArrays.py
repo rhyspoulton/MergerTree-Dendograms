@@ -262,7 +262,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 	AllRootProgenitors, AllBranchIndicators = getRootProgenitors(opt,treedata,SelIndex)
 
 	if(len(AllRootProgenitors)==0):
-		return [],[],[],[],[],[]
+		return [],[],[],[],[]
 
 
 	start = time.time()
