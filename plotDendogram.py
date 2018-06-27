@@ -158,7 +158,6 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	plotData["xposData"][plotData["xposData"]==-1.0] = plotOpt.plotNumRvir 
 
 	maxBranchSize = np.amax(plotData["SizeData"],axis=0)
-
 	#Find the number of branches left and the first and final snapshot in the data
 	numBranches = plotData["xposData"].shape[1] 
 	if(numBranches ==1):
@@ -361,13 +360,13 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 			ibranchSel+=1
 
 	#Add a box around the maximum size data and a label
-	patch = Rectangle((0.001,0.95),0.985,0.03,fill=False,transform=fig.transFigure,clip_on=False,lw=2)
+	patch = Rectangle((0.001,0.95),0.998,0.03,fill=False,transform=fig.transFigure,clip_on=False,lw=2)
 	axes[0].add_patch(patch)
 	axes[0].text(-0.25,1.07,plotOpt.sizeLabel,fontsize=plotOpt.maxSizeFontSize,transform=axes[0].transAxes)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=1))
 
 	#Add the labels to the main branch of interest
 	axes[0].set_ylabel("Snapshot",fontsize=25)
-	axes[0].set_xlabel("Euclidean distance [%s]" %(plotOpt.DistUnit),fontsize=25)
+	axes[0].set_xlabel("Euclidean distance [Mpc]",fontsize=25)
 	axes[0].margins(x=0.0)
 	axes[0].set_xlim(0,maxDist)
 	for label in axes[i].xaxis.get_ticklabels()[::2]: label.set_visible(False)

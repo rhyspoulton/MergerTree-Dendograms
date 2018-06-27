@@ -11,7 +11,7 @@ except NameError:
 
 
 
-def WriteETFCatalogue(format,opt,treedata,Redshift):
+def WriteETFCatalogue(format,opt,treedata,Redshift,fieldsDict):
 	####################################################################################
 
 
@@ -33,12 +33,12 @@ def WriteETFCatalogue(format,opt,treedata,Redshift):
 	headergroup.attrs["startSnap"] = opt.startSnap
 	headergroup.attrs["endSnap"] = opt.endSnap
 	headergroup.attrs["Nsnaps"] = opt.Nsnaps
-	headergroup.attrs["Munit"] = opt.Munit
 	headergroup.attrs["h"] = opt.h
 	headergroup.attrs["boxsize"] = opt.boxsize
 	headergroup.attrs["HALOIDVAL"] = opt.HALOIDVAL
-	headergroup.attrs["MassDef"] = opt.MassDef
-	headergroup.attrs["RDef"] = opt.RDef
+	headergroup.attrs["Munit"] = "10^10 solarmasses"
+	headergroup.attrs["Lunit"] = "Mpc"
+	headergroup.attrs["Vunit"] = "km/s"
 
 	#Add to the header which file the data is from
 	if(format=="VEL"):
@@ -69,7 +69,10 @@ def WriteETFCatalogue(format,opt,treedata,Redshift):
 		#Put all the data in the snapshot group.
 		for key in treedata[snapKey].keys():
 
-			snapgroup.create_dataset(key,data =treedata[snapKey][key])
+			dataset = snapgroup.create_dataset(key,data =treedata[snapKey][key])
+
+			#Add an attribute to the dataset which gives the dataset's orginal name in the catalogue
+			dataset.attrs["origFieldName"] = fieldsDict[key]
 
 	hdffile.close()
 
@@ -83,7 +86,7 @@ class headerOptions(object):
 			raise KeyError("There is no 'Header' group in the hdffile please make sure there is one")
 
 		#Lets check all the required keys exist
-		requiredHeaders = ["startSnap","startSnap","Nsnaps","Munit","h","boxsize"]
+		requiredHeaders = ["startSnap","startSnap","Nsnaps","h","boxsize"]
 		for key in requiredHeaders:
 			if(key not in hdffile["Header"].attrs): 
 				raise KeyError("There is no value for '%s' in the Header please make sure the header in the file has this" %key)
@@ -91,7 +94,6 @@ class headerOptions(object):
 		self.startSnap = np.array(hdffile["Header"].attrs["startSnap"])	
 		self.endSnap = np.array(hdffile["Header"].attrs["endSnap"])		
 		self.Nsnaps = np.array(hdffile["Header"].attrs["Nsnaps"])	
-		self.Munit = np.array(hdffile["Header"].attrs["Munit"])
 		self.h = np.array(hdffile["Header"].attrs["h"])		
 		self.boxsize = np.array(hdffile["Header"].attrs["boxsize"])
 		self.HALOIDVAL = np.array(hdffile["Header"].attrs["HALOIDVAL"])
@@ -205,10 +207,7 @@ def LoadETFCatalogue(filename,plotOpt):
 		for key in requiredDatasets:
 				treedata[snapKey][key] = np.array(hdffile[snapKey][key])
 
-		if(sizeDataKey=="Mass"):
-			treedata[snapKey]["SizeData"] = np.array(hdffile[snapKey][sizeDataKey]) * opt.Munit/1e10
-		else:
-			treedata[snapKey]["SizeData"] = np.array(hdffile[snapKey][sizeDataKey])
+		treedata[snapKey]["SizeData"] = np.array(hdffile[snapKey][sizeDataKey])
 
 		treedata[snapKey]["ColData"] = np.array(hdffile[snapKey][colDataKey]) 
 		if(plotOpt.overplotdata):

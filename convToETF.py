@@ -160,7 +160,7 @@ elif(sys.argv[1]=="Mill"):
 
 
 
-WriteETFCatalogue(sys.argv[1],opt,treedata,Redshift)
+WriteETFCatalogue(sys.argv[1],opt,treedata,Redshift,fieldsDict)
 
 
 

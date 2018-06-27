@@ -57,6 +57,12 @@ def LoadVELOCIraptor(startSnap,endSnap,filename,fieldKeys):
 
 	Redshift = np.zeros(numsnaps,dtype=float)
 
+	# Read the header information
+	icomove = hdffile["Header"]["Units"].attrs["Comoving_or_Physical"][...]
+	length_unit_in_mpc = hdffile["Header"]["Units"].attrs["Length_unit_to_kpc"][...] / 1000.0
+	mass_unit_in_10E10solarmass = hdffile["Header"]["Units"].attrs["Mass_unit_to_solarmass"][...] /1e10
+	velocity_unit_in_kms = hdffile["Header"]["Units"].attrs["Velocity_unit_to_kms"][...]
+
 	# Lets loop over snapshot and extract the necessary data sets
 	for snap in range(startSnap,endSnap+1):
 
@@ -72,12 +78,28 @@ def LoadVELOCIraptor(startSnap,endSnap,filename,fieldKeys):
 		#Loop over all the fields and extract them into memory
 		for field in fieldKeys:
 			
-			if(field=="Pos"):
-				halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["Xc"][:],hdffile[snapKey]["Yc"][:],hdffile[snapKey]["Zc"][:]]) *h/np.float(hdffile[snapKey].attrs["scalefactor"])
-			elif(field=="Rvir"):
-				halodata[snapKey][field] =hdffile[snapKey][field][:] *h/np.float(hdffile[snapKey].attrs["scalefactor"])
-			elif(field=="Vel"):
-				halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["VXc"][:],hdffile[snapKey]["VYc"][:],hdffile[snapKey]["VZc"][:]])
+			#Do all the nessary conversions into ETF units
+			if("Mass" in field):
+				halodata[snapKey][field] = hdffile[snapKey][field][:] * mass_unit_in_10E10solarmass
+
+			elif(field=="Pos"):
+
+				if(icomove):
+					halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["Xc"][:],hdffile[snapKey]["Yc"][:],hdffile[snapKey]["Zc"][:]]) * length_unit_in_mpc
+				else:
+					halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["Xc"][:],hdffile[snapKey]["Yc"][:],hdffile[snapKey]["Zc"][:]]) *h/np.float(hdffile[snapKey].attrs["scalefactor"]) * length_unit_in_mpc
+
+			elif((field=="Radius") | (field[0:2]=="R_") | (field=="Rmax")) :
+
+				if(icomove):
+					halodata[snapKey][field] =hdffile[snapKey][field][:] * length_unit_in_mpc
+				else:
+					halodata[snapKey][field] =hdffile[snapKey][field][:] *h/np.float(hdffile[snapKey].attrs["scalefactor"]) * length_unit_in_mpc
+
+			elif((field=="Vel") | (field=="Vmax") | (field=="sigV")):
+
+				halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["VXc"][:],hdffile[snapKey]["VYc"][:],hdffile[snapKey]["VZc"][:]]) * velocity_unit_in_kms
+
 			else:
 				halodata[snapKey][field] = hdffile[snapKey][field][:]
 

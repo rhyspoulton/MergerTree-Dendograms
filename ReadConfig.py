@@ -70,9 +70,6 @@ class plotOptions(object):
 				elif(line[0]=="maxSizeFontSize"):
 					self.maxSizeFontSize = int(line[1])
 
-				elif(line[0]=="DistUnit"):
-					self.DistUnit = line[1]
-
 				elif(line[0]=="logged"):
 					self.logged = int(line[1])
 
@@ -165,9 +162,6 @@ class ETFoptions(object):
 
 				elif(line[0]=="Nsnaps"):
 					self.Nsnaps = int(line[1])
-
-				elif(line[0]=="Munit"):
-					self.Munit = float(line[1])
 
 				elif(line[0]=="h"):
 					self.h = float(line[1])
