@@ -34,10 +34,10 @@ if(sys.argv[1]=="VEL"):
 	fieldsDict = {}
 	# The required Keys, do not change these!
 	fieldsDict["HaloID"] = "ID"
-	fieldsDict["RootProgenitor"] = "RootTail"
+	fieldsDict["StartProgenitor"] = "RootTail"
 	fieldsDict["Progenitor"] = "Tail"
 	fieldsDict["Descendant"] = "Head"
-	fieldsDict["RootDescendant"] = "RootHead"
+	fieldsDict["EndDescendant"] = "RootHead"
 	fieldsDict["Pos"] = "Pos"
 	fieldsDict["HostHaloID"] = "hostHaloID"
 	fieldsDict["Mass"] = opt.MassDef
@@ -68,10 +68,10 @@ elif(sys.argv[1]=="AHF"):
 	fieldsDict = {}
 	# The required Keys, do not change these!
 	fieldsDict["HaloID"] = ["ID(1)","int64"]
-	fieldsDict["RootProgenitor"] = ["","int64"]
+	fieldsDict["StartProgenitor"] = ["","int64"]
 	fieldsDict["Progenitor"] = ["","int64"]
 	fieldsDict["Descendant"] = ["","int64"]
-	fieldsDict["RootDescendant"] = ["","int64"]
+	fieldsDict["EndDescendant"] = ["","int64"]
 	fieldsDict["Pos"] = ["Xc(6),Yc(7),Zc(8)","float32"]
 	fieldsDict["HostHaloID"] = ["hostHalo(2)","int64"]
 	fieldsDict["origID"] = ["ID(1)","int64"]
@@ -102,10 +102,10 @@ elif(sys.argv[1]=="Rock"):
 	fieldsDict = {}
 	# The required Keys, do not change these!
 	fieldsDict["HaloID"] = ["id(1)","int64"]
-	fieldsDict["RootProgenitor"] = ["","int64"]
+	fieldsDict["StartProgenitor"] = ["","int64"]
 	fieldsDict["Progenitor"] = ["","int64"]
 	fieldsDict["Descendant"] = ["desc_id(3)","int64"]
-	fieldsDict["RootDescendant"] = ["","int64"]
+	fieldsDict["EndDescendant"] = ["","int64"]
 	fieldsDict["Pos"] = ["x(17),y(18),z(19)","float32"]
 	fieldsDict["HostHaloID"] = ["upid(6)","int64"]
 	fieldsDict["origID"] = ["id(1)","int64"]

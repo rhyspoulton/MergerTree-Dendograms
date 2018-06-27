@@ -162,7 +162,7 @@ def ReadHaloMergerTreeAcrossSnapshots(startSnap,endSnap,filelist):
 	return treedata	
 
 
-def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant,TreeRootDescendant,HALOIDVAL,startSnap,depth,treeProgenIndex=0):
+def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant,TreeEndDescendant,HALOIDVAL,startSnap,depth,treeProgenIndex=0):
 
 	#print(Descendant,Progenitors,treeProgenIndex)
 
@@ -175,14 +175,14 @@ def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant
 		haloSnap = snap
 		haloSnapKey = "Snap_%03d" %snap 
 
-		# Lets set these progen branches to point up to the descendant and RootDescendant halo
+		# Lets set these progen branches to point up to the descendant and EndDescendant halo
 		haloIndex = np.where(halodata[haloSnapKey]["HaloID"]==haloID)[0].astype(int)
 		
 		if(MTFdata[haloSnapKey]["HaloID"][haloIndex]==0):
 
 			MTFdata[haloSnapKey]["Descendant"][haloIndex] = Descendant
 
-			MTFdata[haloSnapKey]["RootDescendant"][haloIndex] = TreeRootDescendant
+			MTFdata[haloSnapKey]["EndDescendant"][haloIndex] = TreeEndDescendant
 
 			while(True):
 
@@ -200,7 +200,7 @@ def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant
 
 				# If it doesn't exist in the treedata lets break out of the loop
 				if(treeProgenIndx.size==0):
-					#print("Reached RootProgenitor for halo",MTFdata[haloSnapKey]["HaloID"][haloIndex])
+					#print("Reached StartProgenitor for halo",MTFdata[haloSnapKey]["HaloID"][haloIndex])
 					MTFdata[haloSnapKey]["Progenitor"][haloIndex] = MTFdata[haloSnapKey]["HaloID"][haloIndex]
 					break
 
@@ -213,7 +213,7 @@ def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant
 				# Make sure the main progenitor isn't in the list of progenitors
 				SecondaryProgenitors = Progenitors[Progenitors!=mainProgenitor]
 
-				MTFdata = walkDownProgenBranches(haloSnap - 1,halodata,treedata,MTFdata,SecondaryProgenitors,MTFdata[haloSnapKey]["HaloID"][haloIndex],TreeRootDescendant,HALOIDVAL,startSnap,depth+1,treeProgenIndx)
+				MTFdata = walkDownProgenBranches(haloSnap - 1,halodata,treedata,MTFdata,SecondaryProgenitors,MTFdata[haloSnapKey]["HaloID"][haloIndex],TreeEndDescendant,HALOIDVAL,startSnap,depth+1,treeProgenIndx)
 
 				# Lets find the info for its progenitor
 				progenSnap = haloSnap - 1
@@ -225,7 +225,7 @@ def walkDownProgenBranches(snap,halodata,treedata,MTFdata,Progenitors,Descendant
 
 				# Lets set the current 
 				MTFdata[progenSnapKey]["Descendant"][progenIndex] = MTFdata[haloSnapKey]["HaloID"][haloIndex]
-				MTFdata[progenSnapKey]["RootDescendant"][progenIndex] = TreeRootDescendant
+				MTFdata[progenSnapKey]["EndDescendant"][progenIndex] = TreeEndDescendant
 
 				#Now lets move to the main progenitor halo
 				haloSnap = progenSnap
@@ -332,10 +332,10 @@ def SetProgenandDesc(ihalo,snap,startSnap,halodata,treedata,MTFdata,HALOIDVAL):
 		MTFdata[snapKey]["HaloID"][ihalo] = snap * HALOIDVAL + ihalo +1
 	
 
-		TreeRootDescendant = MTFdata[snapKey]["HaloID"][ihalo]
-		Descendant = TreeRootDescendant
+		TreeEndDescendant = MTFdata[snapKey]["HaloID"][ihalo]
+		Descendant = TreeEndDescendant
 
-		# print("Doing tree with RootDescendant", TreeRootDescendant,"of",numhalos[isnap])
+		# print("Doing tree with EndDescendant", TreeEndDescendant,"of",numhalos[isnap])
 		
 		#Set the data for the current halo 
 		haloIndex = ihalo
@@ -346,9 +346,9 @@ def SetProgenandDesc(ihalo,snap,startSnap,halodata,treedata,MTFdata,HALOIDVAL):
 
 		while(True):
 
-			#Set the haloID, descendant and the RootDescendant for this halo
+			#Set the haloID, descendant and the EndDescendant for this halo
 			MTFdata[haloSnapKey]["Descendant"][haloIndex] = Descendant
-			MTFdata[haloSnapKey]["RootDescendant"][haloIndex] = TreeRootDescendant
+			MTFdata[haloSnapKey]["EndDescendant"][haloIndex] = TreeEndDescendant
 
 			# print("On haloID",MTFdata[haloSnapKey]["HaloID"][haloIndex])
 
@@ -380,7 +380,7 @@ def SetProgenandDesc(ihalo,snap,startSnap,halodata,treedata,MTFdata,HALOIDVAL):
 			SecondaryProgenitors = Progenitors[Progenitors!=mainProgenitor]
 
 			# Walk down the progenitor branches setting the Progenitor, Descedant and RootDesendant for each halo
-			MTFdata = walkDownProgenBranches(haloSnap - 1,halodata,treedata,MTFdata,SecondaryProgenitors,MTFdata[haloSnapKey]["HaloID"][haloIndex],TreeRootDescendant,HALOIDVAL,startSnap,0)
+			MTFdata = walkDownProgenBranches(haloSnap - 1,halodata,treedata,MTFdata,SecondaryProgenitors,MTFdata[haloSnapKey]["HaloID"][haloIndex],TreeEndDescendant,HALOIDVAL,startSnap,0)
 
 			# Set the data for the main progenitor
 			progenSnap = haloSnap - 1
@@ -397,7 +397,7 @@ def SetProgenandDesc(ihalo,snap,startSnap,halodata,treedata,MTFdata,HALOIDVAL):
 
 			MTFdata[haloSnapKey]["HaloID"][haloIndex] = haloSnap * HALOIDVAL + haloIndex +1
 
-		# print("Done tree with RootDescendant",TreeRootDescendant,"in",time.time()-starthalo)
+		# print("Done tree with EndDescendant",TreeEndDescendant,"in",time.time()-starthalo)
 
 
 
@@ -452,7 +452,7 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 
 	totstart = time.time()
 
-	requiredFields = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","M200crit","Pos","HostHaloID"]
+	requiredFields = ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","M200crit","Pos","HostHaloID"]
 	extraFields = [field for field in halodata["Snap_%03d" %startSnap].keys() if field not in requiredFields] 
 
 	numsnaps = endSnap - startSnap + 1
@@ -476,15 +476,15 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 		numhalos[isnap] = halodata[snapKey]["HaloID"].size
 
 		# Intialize arrays for the tree properties
-		MTFdata[snapKey]["RootDescendant"] = np.zeros(numhalos[isnap],dtype=np.int64)
+		MTFdata[snapKey]["EndDescendant"] = np.zeros(numhalos[isnap],dtype=np.int64)
 		MTFdata[snapKey]["Descendant"] = np.zeros(numhalos[isnap],dtype=np.int64)
 		MTFdata[snapKey]["HaloID"] = np.zeros(numhalos[isnap],dtype=np.int64)
 		MTFdata[snapKey]["Progenitor"] = np.zeros(numhalos[isnap],dtype=np.int64)
-		MTFdata[snapKey]["RootProgenitor"] = np.zeros(numhalos[isnap],dtype=np.int64)
+		MTFdata[snapKey]["StartProgenitor"] = np.zeros(numhalos[isnap],dtype=np.int64)
 		MTFdata[snapKey]["HostHaloID"] = -1 * np.ones(numhalos[isnap],dtype=np.int64)
 
 
-	print("Setting Progenitors, Descendant and RootDescendants for the branches")
+	print("Setting Progenitors, Descendant and EndDescendants for the branches")
 
 	manager = mp.Manager()
 
@@ -561,10 +561,10 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 
 		print("Done snap in",time.time()-start,np.sum(MTFdata["Snap_%03d" %snap]["HaloID"]==0))	
 
-	print("Setting RootProgenitors")
+	print("Setting StartProgenitors")
 
-	#Now we have set the Progenitors, Descendants and RootDescendants for all the halos we now need to
-	#Walk back up the tree setting the RootProgenitors
+	#Now we have set the Progenitors, Descendants and EndDescendants for all the halos we now need to
+	#Walk back up the tree setting the StartProgenitors
 
 
 	for snap in range(startSnap,endSnap+1):
@@ -575,14 +575,14 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 		for ihalo in range(numhalos[isnap]):
 
 			#First lets check if its root progenitor has been set
-			if(MTFdata[snapKey]["RootProgenitor"][ihalo]==0):
+			if(MTFdata[snapKey]["StartProgenitor"][ihalo]==0):
 
 				# If not extract the halo ID and set it as the root progenitor
 				HaloID = MTFdata[snapKey]["HaloID"][ihalo]
-				branchRootProgenitor = HaloID
+				branchStartProgenitor = HaloID
 
 				#Setting itself as it own root progenitor
-				MTFdata[snapKey]["RootProgenitor"][ihalo] = branchRootProgenitor
+				MTFdata[snapKey]["StartProgenitor"][ihalo] = branchStartProgenitor
 
 				# Extract the halos desendant 
 				Descendant = MTFdata[snapKey]["Descendant"][ihalo]
@@ -601,7 +601,7 @@ def convToMTF(startSnap,endSnap,halodata,treedata,HALOIDVAL = 1000000000000):
 					haloSnap = descSnap
 					haloSnapKey = descSnapKey
 					haloIndex = descIndex
-					MTFdata[haloSnapKey]["RootProgenitor"][haloIndex] = branchRootProgenitor
+					MTFdata[haloSnapKey]["StartProgenitor"][haloIndex] = branchStartProgenitor
 
 					#Extract the halos desendant and the desendants progenitor
 					Descendant = MTFdata[haloSnapKey]["Descendant"][haloIndex]

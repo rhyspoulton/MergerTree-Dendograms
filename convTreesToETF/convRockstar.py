@@ -36,7 +36,7 @@ def _getconv(dtype):
 
 def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSnap,treefilelist,fieldsDict,HALOIDVAL=1000000000000):
 
-	treeFields = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant"]
+	treeFields = ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant"]
 	otherFields = [field for field in fieldsDict.keys() if field not in treeFields] 
 
 	start = time.time()
@@ -74,7 +74,7 @@ def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSna
 
 	tmphalodata = {}
 
-	MTFfieldnames = list(fieldsDict.keys()) + ["RootDescendant","RootProgenitor"]
+	MTFfieldnames = list(fieldsDict.keys()) + ["EndDescendant","StartProgenitor"]
 
 	MTFdata = {"Snap_%03d" %snap:{field:[] for field in MTFfieldnames} for snap in range(startSnap,endSnap+1)}
 
@@ -126,10 +126,10 @@ def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSna
 				HaloID = mainsnap * HALOIDVAL + len(MTFdata["Snap_%03d" %mainsnap]["HaloID"]) + 1
 
 				if(ihalo==0):
-					TreeRootDescendant = HaloID
+					TreeEndDescendant = HaloID
 					Descendant = HaloID
 					MTFdata[mainsnapKey]["Descendant"].append(Descendant)
-					MTFdata[mainsnapKey]["RootDescendant"].append(TreeRootDescendant)
+					MTFdata[mainsnapKey]["EndDescendant"].append(TreeEndDescendant)
 
 				MTFdata[mainsnapKey]["HaloID"].append(HaloID)
 								
@@ -147,7 +147,7 @@ def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSna
 
 				if(numProg==0):
 					MTFdata[mainsnapKey]["Progenitor"].append(HaloID)
-					MTFdata[mainsnapKey]["RootProgenitor"].append(0)
+					MTFdata[mainsnapKey]["StartProgenitor"].append(0)
 
 
 				else:
@@ -155,10 +155,10 @@ def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSna
 					progenSnapKey = "Snap_%03d" %progenSnap
 
 					MTFdata[mainsnapKey]["Progenitor"].append(progenSnap * HALOIDVAL + len(MTFdata[progenSnapKey]["HaloID"]) + prevNumProg[progenSnap]  + 1)
-					MTFdata[mainsnapKey]["RootProgenitor"].append(0)
+					MTFdata[mainsnapKey]["StartProgenitor"].append(0)
 
 					MTFdata[progenSnapKey]["Descendant"].extend([HaloID]*numProg)
-					MTFdata[progenSnapKey]["RootDescendant"].extend([TreeRootDescendant]*numProg)
+					MTFdata[progenSnapKey]["EndDescendant"].extend([TreeEndDescendant]*numProg)
 
 				#move onto the next line
 				line = fp.readline()
@@ -236,10 +236,10 @@ def convToMTF(startSnap,endSnap,fieldsDict,MTFdata,HALOIDVAL=1000000000000):
 	totstart = time.time()
 
 	
-	print("Setting RootProgenitors")
+	print("Setting StartProgenitors")
 
-	#Now we have set the Progenitors, Descendants and RootDescendants for all the halos we now need to
-	#Walk back up the tree setting the RootProgenitors
+	#Now we have set the Progenitors, Descendants and EndDescendants for all the halos we now need to
+	#Walk back up the tree setting the StartProgenitors
 
 
 	for snap in range(startSnap,endSnap+1):
@@ -263,13 +263,13 @@ def convToMTF(startSnap,endSnap,fieldsDict,MTFdata,HALOIDVAL=1000000000000):
 
 
 			#First lets check if its root progenitor has been set
-			if(MTFdata[snapKey]["RootProgenitor"][ihalo]==0):
+			if(MTFdata[snapKey]["StartProgenitor"][ihalo]==0):
 
 				# If not extract the halo ID and set it as the root progenitor
 				HaloID = MTFdata[snapKey]["HaloID"][ihalo]
-				branchRootProgenitor = HaloID
+				branchStartProgenitor = HaloID
 
-				MTFdata[snapKey]["RootProgenitor"][ihalo]=branchRootProgenitor
+				MTFdata[snapKey]["StartProgenitor"][ihalo]=branchStartProgenitor
 
 				# Extract the halos desendant 
 				Descendant = MTFdata[snapKey]["Descendant"][ihalo]
@@ -288,7 +288,7 @@ def convToMTF(startSnap,endSnap,fieldsDict,MTFdata,HALOIDVAL=1000000000000):
 					haloSnap = descSnap
 					haloSnapKey = descSnapKey
 					haloIndex = descIndex
-					MTFdata[haloSnapKey]["RootProgenitor"][haloIndex] = branchRootProgenitor
+					MTFdata[haloSnapKey]["StartProgenitor"][haloIndex] = branchStartProgenitor
 
 					#Extract the halos desendant and the desendants progenitor
 					Descendant = MTFdata[haloSnapKey]["Descendant"][haloIndex]
@@ -301,7 +301,7 @@ def convToMTF(startSnap,endSnap,fieldsDict,MTFdata,HALOIDVAL=1000000000000):
 
 
 
-	print("Done setting RootProgenitors in",time.time()-totstart)
+	print("Done setting StartProgenitors in",time.time()-totstart)
 
 
 

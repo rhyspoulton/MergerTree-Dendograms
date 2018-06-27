@@ -1,7 +1,7 @@
 
 ####################################################################################
 
-# Functions to get all RootProgenitors and create the plotting arrays
+# Functions to get all StartProgenitors and create the plotting arrays
 
 # By: Rhys Poulton
 
@@ -15,7 +15,7 @@ import cosFuncs
 import time
 from scipy.interpolate import interp1d
 
-def getRootProgenitors(opt,treedata,SelIndex):
+def getStartProgenitors(opt,treedata,SelIndex):
 
 	start = time.time()
 
@@ -23,53 +23,53 @@ def getRootProgenitors(opt,treedata,SelIndex):
 	endSnapName = "Snap_%03d" %opt.endSnap
 
 	#Set the main branches Root Descendant and Root Progeintor
-	MainBranchRootDescedant = treedata[endSnapName]["RootDescendant"][SelIndex]
-	MainBranchRootProgenitor = treedata[endSnapName]["RootProgenitor"][SelIndex]
+	MainBranchEndDescendant = treedata[endSnapName]["EndDescendant"][SelIndex]
+	MainBranchStartProgenitor = treedata[endSnapName]["StartProgenitor"][SelIndex]
 
 	#Get the final and initial snapshots for this main branch
-	MainBranchisnap = int(MainBranchRootProgenitor/opt.HALOIDVAL)
-	MainBranchfsnap = int(MainBranchRootDescedant/opt.HALOIDVAL)
+	MainBranchisnap = int(MainBranchStartProgenitor/opt.HALOIDVAL)
+	MainBranchfsnap = int(MainBranchEndDescendant/opt.HALOIDVAL)
 	MainBranchNsnaps = MainBranchfsnap - MainBranchisnap
 
 	if(MainBranchisnap<opt.startSnap):
 		raise SystemExit("The main branches root progenitor is at snapshot %i but starting snapshot for the plotting is at %i so the full branch cannot be plotted. Please adjust the startSnap for plotting" %(MainBranchisnap,opt.startSnap))
 
 	if(MainBranchNsnaps<2):
-		print("The branch with Root Descendant %d only exist for a single snapshot so cannot be plotted." %MainBranchRootDescedant)
+		print("The branch with Root Descendant %d only exist for a single snapshot so cannot be plotted." %MainBranchEndDescendant)
 		return [],[]
 
-	#A container which has all the RootProgenitors of interest for this Tree
-	TreeRootProgenitors = deque([MainBranchRootProgenitor])
+	#A container which has all the StartProgenitors of interest for this Tree
+	TreeStartProgenitors = deque([MainBranchStartProgenitor])
 
-	print("Finding tree RootProgenitors")
-	#Move down the tree to see which halos point to the MainBranchRootDescedant for this tree
+	print("Finding tree StartProgenitors")
+	#Move down the tree to see which halos point to the MainBranchEndDescendant for this tree
 	for snap in range(opt.startSnap,opt.endSnap):
 
 		snapname = "Snap_%03d" %(snap)
 
-		#Find which halo at this snapshot point to the MainBranchRootDescedant
-		sel = np.where(treedata[snapname]["RootDescendant"]==MainBranchRootDescedant)[0]
+		#Find which halo at this snapshot point to the MainBranchEndDescendant
+		sel = np.where(treedata[snapname]["EndDescendant"]==MainBranchEndDescendant)[0]
 
 		if(len(sel)>0):
 			#Add it to the list of the Tree Root Progenitors
-			TreeRootProgenitors.extend(treedata[snapname]["RootProgenitor"][sel].astype(np.int64))
+			TreeStartProgenitors.extend(treedata[snapname]["StartProgenitor"][sel].astype(np.int64))
 
 	# Make these unique so they only appear once
-	TreeRootProgenitors = np.unique(TreeRootProgenitors)
+	TreeStartProgenitors = np.unique(TreeStartProgenitors)
 
 	#find the original root tail of interest and place it at zero
-	sel=np.where(TreeRootProgenitors==MainBranchRootProgenitor)[0]
+	sel=np.where(TreeStartProgenitors==MainBranchStartProgenitor)[0]
 	if (sel!=0):
-		TreeRootProgenitors[0],TreeRootProgenitors[sel] = TreeRootProgenitors[sel],TreeRootProgenitors[0]
+		TreeStartProgenitors[0],TreeStartProgenitors[sel] = TreeStartProgenitors[sel],TreeStartProgenitors[0]
 
 	#This will be the identifier if a branch is a main or subbranch(-1) sub-subbranch (>-1) or anything deeper (-3)
-	ProgenBranchIndicator = -1 * np.ones(len(TreeRootProgenitors),dtype=np.int32)
+	ProgenBranchIndicator = -1 * np.ones(len(TreeStartProgenitors),dtype=np.int32)
 
 	# # Now we have the unique tree root progenitors we can now move up the tree to find the depth of the tree
-	# for ibranch,RootProgenitor in enumerate(TreeRootProgenitors[1:]):
+	# for ibranch,StartProgenitor in enumerate(TreeStartProgenitors[1:]):
 
-	# 	#First extract the haloID of the rootprogenitor, its index and snapshot
-	# 	haloID = RootProgenitor
+	# 	#First extract the haloID of the StartProgenitor, its index and snapshot
+	# 	haloID = StartProgenitor
 	# 	haloIndex = int(haloID%opt.HALOIDVAL - 1)
 	# 	haloSnap = int(haloID/opt.HALOIDVAL)
 
@@ -93,11 +93,11 @@ def getRootProgenitors(opt,treedata,SelIndex):
 	# 		if(progenID!=haloID):
 
 	# 			#If not then extract its Root Progenitor of the branch it merges with
-	# 			BranchRootProgen = treedata[snapname]["RootProgenitor"][descIndex]
+	# 			BranchRootProgen = treedata[snapname]["StartProgenitor"][descIndex]
 
 	# 			#If this doesn't point to the main branch, keep track of which one it points to 
-	# 			if(BranchRootProgen!=MainBranchRootProgenitor):
-	# 				sel = np.where(TreeRootProgenitors==BranchRootProgen)[0]
+	# 			if(BranchRootProgen!=MainBranchStartProgenitor):
+	# 				sel = np.where(TreeStartProgenitors==BranchRootProgen)[0]
 	# 				ProgenBranchIndicator[ibranch+1] = sel
 
 	# 			break
@@ -110,10 +110,10 @@ def getRootProgenitors(opt,treedata,SelIndex):
 
 
 	#Now we need to identify all subhalos across the lifetime of the main Branch plus include its host if the main branch is itself a subhalo
-	SubhaloBranchRootProgenitors = deque()
+	SubhaloBranchStartProgenitors = deque()
 
 	snapname = endSnapName
-	haloID = MainBranchRootDescedant
+	haloID = MainBranchEndDescendant
 
 	haloIndex = int(haloID%opt.HALOIDVAL -1)
 	haloSnap = int(haloID/opt.HALOIDVAL)
@@ -124,24 +124,24 @@ def getRootProgenitors(opt,treedata,SelIndex):
 	progenSnap = int(progenID/opt.HALOIDVAL)
 
 	#Store the host root progen if the main branch is ever a subhalo
-	MainBranchHostRootProgenitorIDs = []
+	MainBranchHostStartProgenitorIDs = []
 
-	print("Found",len(TreeRootProgenitors),"Tree RootProgenitors")
+	print("Found",len(TreeStartProgenitors),"Tree StartProgenitors")
 
 	while(True):
 
 		#Lets identify all halos which have the main branch and store their Root Progenitors so we can check they are also a progenitor so have been plotted twice
-		sel = np.where((treedata[snapname]["HostHaloID"]==haloID) & (treedata[snapname]["RootDescendant"]!=MainBranchRootDescedant))
+		sel = np.where((treedata[snapname]["HostHaloID"]==haloID) & (treedata[snapname]["EndDescendant"]!=MainBranchEndDescendant))
 
 		if(len(sel)>0):
-			SubhaloBranchRootProgenitors.extend(treedata[snapname]["RootProgenitor"][sel].astype(np.int64))
+			SubhaloBranchStartProgenitors.extend(treedata[snapname]["StartProgenitor"][sel].astype(np.int64))
 		
 
 		if(treedata[snapname]["HostHaloID"][haloIndex]!=-1):
 			HostHaloID = treedata[snapname]["HostHaloID"][haloIndex]
 			hostIndex = int(HostHaloID%opt.HALOIDVAL-1)
-			SubhaloBranchRootProgenitors.extend([treedata[snapname]["RootProgenitor"][hostIndex].astype(np.int64)])
-			MainBranchHostRootProgenitorIDs.extend([treedata[snapname]["RootProgenitor"][hostIndex].astype(np.int64)])
+			SubhaloBranchStartProgenitors.extend([treedata[snapname]["StartProgenitor"][hostIndex].astype(np.int64)])
+			MainBranchHostStartProgenitorIDs.extend([treedata[snapname]["StartProgenitor"][hostIndex].astype(np.int64)])
 		if(haloID == progenID): break
 
 		#Now lets move to the progenitor
@@ -158,39 +158,39 @@ def getRootProgenitors(opt,treedata,SelIndex):
 		progenIndex = int(progenID%opt.HALOIDVAL - 1)
 		progenSnap = int(progenID/opt.HALOIDVAL)
 
-	print("Found",len(SubhaloBranchRootProgenitors),"Subhalo RootProgenitors")
+	print("Found",len(SubhaloBranchStartProgenitors),"Subhalo StartProgenitors")
 
 	
 	#Only if found any halos which were subhalos of the main branch
-	if(len(SubhaloBranchRootProgenitors)>0):
+	if(len(SubhaloBranchStartProgenitors)>0):
 
 		#Lets make all these subhalo root progenitors unique
-		SubhaloBranchRootProgenitors = np.unique(SubhaloBranchRootProgenitors)
+		SubhaloBranchStartProgenitors = np.unique(SubhaloBranchStartProgenitors)
 
 		#Set the indicator for the subhalo branches -2 
-		SubhaloBranchesIndicator = -2 * np.ones(len(SubhaloBranchRootProgenitors),dtype=np.int32)
+		SubhaloBranchesIndicator = -2 * np.ones(len(SubhaloBranchStartProgenitors),dtype=np.int32)
 
-		#Now concatenate both the TreeRootProgenitors and the SubhaloBranchRootProgenitors, plus their Indicators
-		AllRootProgenitors = np.concatenate([TreeRootProgenitors,SubhaloBranchRootProgenitors[::-1]])
+		#Now concatenate both the TreeStartProgenitors and the SubhaloBranchStartProgenitors, plus their Indicators
+		AllStartProgenitors = np.concatenate([TreeStartProgenitors,SubhaloBranchStartProgenitors[::-1]])
 		AllBranchIndicators = np.concatenate([ProgenBranchIndicator,SubhaloBranchesIndicator[::-1]])
 
 		#Make them all unique so a branch does not appear more than once
-		_,uniqueIndexes = np.unique(AllRootProgenitors,return_index=True)
+		_,uniqueIndexes = np.unique(AllStartProgenitors,return_index=True)
 
 		uniqueIndexes=np.sort(uniqueIndexes)
 
-		AllRootProgenitors = AllRootProgenitors[uniqueIndexes]
+		AllStartProgenitors = AllStartProgenitors[uniqueIndexes]
 		AllBranchIndicators = AllBranchIndicators[uniqueIndexes]
 
 		#find the original root tail of interest and place it at zero
-		sel=np.where(AllRootProgenitors==MainBranchRootProgenitor)[0]
+		sel=np.where(AllStartProgenitors==MainBranchStartProgenitor)[0]
 		if (sel!=0):
-			AllRootProgenitors[0],AllRootProgenitors[sel] = AllRootProgenitors[sel],AllRootProgenitors[0]
+			AllStartProgenitors[0],AllStartProgenitors[sel] = AllStartProgenitors[sel],AllStartProgenitors[0]
 
 
-		if(len(MainBranchHostRootProgenitorIDs)>0):
-			#Get the location of where the MainBranchHostRootProgenitorIDs are
-			MainBranchHostIndicator = np.in1d(AllRootProgenitors,MainBranchHostRootProgenitorIDs)
+		if(len(MainBranchHostStartProgenitorIDs)>0):
+			#Get the location of where the MainBranchHostStartProgenitorIDs are
+			MainBranchHostIndicator = np.in1d(AllStartProgenitors,MainBranchHostStartProgenitorIDs)
 			#Set them so they point to the main branch
 			AllBranchIndicators[MainBranchHostIndicator] = 0
 
@@ -198,18 +198,18 @@ def getRootProgenitors(opt,treedata,SelIndex):
 
 
 	else:
-		#Otherwise just set it equal to the TreeRootProgenitors
-		AllRootProgenitors = TreeRootProgenitors
+		#Otherwise just set it equal to the TreeStartProgenitors
+		AllStartProgenitors = TreeStartProgenitors
 		AllBranchIndicators = ProgenBranchIndicator
 
-	if(len(AllRootProgenitors)==1):
+	if(len(AllStartProgenitors)==1):
 		raise Exception("This tree only has 1 branch so cannot be plotted")
 
 
-	print("This tree has ",len(AllRootProgenitors),"branches")
-	print("Done finding all RootProgenitors in",time.time() - start)
+	print("This tree has ",len(AllStartProgenitors),"branches")
+	print("Done finding all StartProgenitors in",time.time() - start)
 
-	return AllRootProgenitors, AllBranchIndicators
+	return AllStartProgenitors, AllBranchIndicators
 
 
 def MoveBranches(perIndx,branchIndicator,depthIndicator,Indexes,Indx,depth):
@@ -259,16 +259,16 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 
 	plotData = {}
 
-	AllRootProgenitors, AllBranchIndicators = getRootProgenitors(opt,treedata,SelIndex)
+	AllStartProgenitors, AllBranchIndicators = getStartProgenitors(opt,treedata,SelIndex)
 
-	if(len(AllRootProgenitors)==0):
+	if(len(AllStartProgenitors)==0):
 		return [],[],[],[],[]
 
 
 	start = time.time()
 	print("Now creating the plot arrays")
 
-	numBranches = np.int32(AllRootProgenitors.shape[0])
+	numBranches = np.int32(AllStartProgenitors.shape[0])
 
 	#Intilize the plotting arrays for the data
 	plotData["xposData"] = np.zeros([opt.Nsnaps,numBranches],dtype=np.float32) #The x-position of the point
@@ -284,20 +284,20 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 	prevpos = np.zeros(3,dtype=np.float32)
 
 	# Get the snapshot which the main branch comes into existance
-	MainBranchisnap = int(AllRootProgenitors[0]/opt.HALOIDVAL)
+	MainBranchisnap = int(AllStartProgenitors[0]/opt.HALOIDVAL)
 
 	#Store the main branches position and Radius
 	mainBranchPos = np.zeros([opt.Nsnaps,3],dtype=np.float32)
 	mainBranchRadius = np.zeros(opt.Nsnaps,dtype=np.float32)
 	mainBranchIDs = np.zeros(opt.Nsnaps,dtype=np.int64)
 
-	# print("ibranch snapKey haloID descProgenitor descendant branchRootTail descRootDescendant currRootDescendant descRootProgenitor currRootProgenitor")
+	# print("ibranch snapKey haloID descProgenitor descendant branchRootTail descEndDescendant currEndDescendant descStartProgenitor currStartProgenitor")
 
 
-	#Now we want to walk up from the AllRootProgenitors to build the tree and create the arrays
+	#Now we want to walk up from the AllStartProgenitors to build the tree and create the arrays
 	for ibranch in range(numBranches):
 		#Extract the Root Progenitor for this branch
-		haloID = AllRootProgenitors[ibranch]
+		haloID = AllStartProgenitors[ibranch]
 		
 		#Move up the branch setting the plotting data as we go
 		while(True):
@@ -313,7 +313,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 			pos[:] =  treedata[snapKey]["Pos"][index]
 
 			#If at the root progenitor set the previous position to the current
-			if(haloID==AllRootProgenitors[ibranch]):
+			if(haloID==AllStartProgenitors[ibranch]):
 				prevpos[:]=pos
 
 			for k in range(3):
@@ -340,7 +340,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 				mainBranchPos[isnap,:] = pos
 				mainBranchRadius[isnap] = treedata[snapKey]["Radius"][index]
 				#If at the root progenitor then store its start position and set its position to be small (non-zero)
-				if(haloID==AllRootProgenitors[ibranch]):
+				if(haloID==AllStartProgenitors[ibranch]):
 					startpos[:] = pos
 					plotData["xposData"][isnap,ibranch] = 1e-5
 				#Otherwise track its position relative to its start position
@@ -377,7 +377,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 
 				# Check if the descendant is equal to the haloID so we have reached the end of this branch
 				if(haloID==descendant):
-					# print("haloID==descendant",treedata[snapKey]["HaloID"][index],AllRootProgenitors[ibranch],treedata[snapKey]["RootDescendant"][index])
+					# print("haloID==descendant",treedata[snapKey]["HaloID"][index],AllStartProgenitors[ibranch],treedata[snapKey]["EndDescendant"][index])
 					
 					#If we are not at the final snapshot then lets mark it as a branch which dies and doesn't merge with anything
 					if(snap<(opt.Nsnaps-1)):
@@ -396,12 +396,12 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 				#Now lets see if the progenitor points back to the haloID, if not then it has merged with another branch
 				if(haloID!=descProgenitor): 
 
-					#Lets find the RootProgenitor for this branch:
-					branchRootTail = treedata[descSnapKey]["RootProgenitor"][descIndex]
-					#Lets see if it doesn't point to the mainBranches RootProgenitor
-					if(branchRootTail!=AllRootProgenitors[0]):
-						#Otherwise lets track which branch in the RootProgenitor list it points to
-						sel = np.where(AllRootProgenitors==branchRootTail)[0]
+					#Lets find the StartProgenitor for this branch:
+					branchRootTail = treedata[descSnapKey]["StartProgenitor"][descIndex]
+					#Lets see if it doesn't point to the mainBranches StartProgenitor
+					if(branchRootTail!=AllStartProgenitors[0]):
+						#Otherwise lets track which branch in the StartProgenitor list it points to
+						sel = np.where(AllStartProgenitors==branchRootTail)[0]
 
 
 						

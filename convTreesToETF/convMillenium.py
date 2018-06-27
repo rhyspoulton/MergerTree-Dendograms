@@ -24,8 +24,8 @@ def setProgenRootHeads(mainProgenSnap,mainHaloID,mainProgenIndex,BranchRootDesc,
 		iprogenSnap = progenSnap
 		iprogenSnapKey = "Snap_%03d" %iprogenSnap
 
-		#Set its RootDescendant and this branches depth
-		treedata[iprogenSnapKey]["RootDescendant"][progenIndex] = BranchRootDesc
+		#Set its EndDescendant and this branches depth
+		treedata[iprogenSnapKey]["EndDescendant"][progenIndex] = BranchRootDesc
 
 
 		#Loop until the get to the last progenitor
@@ -44,8 +44,8 @@ def setProgenRootHeads(mainProgenSnap,mainHaloID,mainProgenIndex,BranchRootDesc,
 			progenIndex = np.where(treedata[iprogenSnapKey]["HaloID"] == progenID)[0]
 
 
-			#Set its RootDescendant and its depth
-			treedata[iprogenSnapKey]["RootDescendant"][progenIndex] = BranchRootDesc
+			#Set its EndDescendant and its depth
+			treedata[iprogenSnapKey]["EndDescendant"][progenIndex] = BranchRootDesc
 
 			#Check if halo has any progeintors and walk down its tree
 			if(np.sum(halodata[iprogenSnapKey]["Descendant"]==haloID)>1):
@@ -64,7 +64,7 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 	numhalos = np.zeros(numsnaps,dtype=np.int64)
 
-	requiredFields = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","M200crit","Pos","HostHaloID","Redshift"]
+	requiredFields = ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","M200crit","Pos","HostHaloID","Redshift"]
 	extraFields = [field for field in fieldsDict.keys() if field not in requiredFields] 
 
 	treedata = {"Snap_%03d" %snap:{} for snap in range(numsnaps)}
@@ -75,11 +75,11 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 		numhalos[snap] = len(halodata[snapKey]["HaloID"])
 
-		treedata[snapKey]["RootDescendant"] = np.zeros(numhalos[snap],dtype=np.int64)
+		treedata[snapKey]["EndDescendant"] = np.zeros(numhalos[snap],dtype=np.int64)
 		treedata[snapKey]["Descendant"] = np.zeros(numhalos[snap],dtype=np.int64)
 		treedata[snapKey]["HaloID"] = np.zeros(numhalos[snap],dtype=np.int64)
 		treedata[snapKey]["Progenitor"] = np.zeros(numhalos[snap],dtype=np.int64)
-		treedata[snapKey]["RootProgenitor"] = np.zeros(numhalos[snap],dtype=np.int64)
+		treedata[snapKey]["StartProgenitor"] = np.zeros(numhalos[snap],dtype=np.int64)
 
 		print(list(halodata[snapKey].keys()))
 		treedata[snapKey]["Redshift"] = halodata[snapKey]["Redshift"]
@@ -94,7 +94,7 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 
 
-	print("Setting Halos Progenitors, descendants and RootProgenitors")
+	print("Setting Halos Progenitors, descendants and StartProgenitors")
 
 
 	for snap in range(numsnaps):
@@ -120,19 +120,19 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 				#Set the Branches RootTail
 				BranchRootTail = treedata[currSnapKey]["HaloID"][currIndex]
-				treedata[currSnapKey]["RootProgenitor"][currIndex] = BranchRootTail
+				treedata[currSnapKey]["StartProgenitor"][currIndex] = BranchRootTail
 				treedata[currSnapKey]["Progenitor"][currIndex]
 
-				#Loop over this branch setting the Descendant, Progenitor and RootProgenitor
+				#Loop over this branch setting the Descendant, Progenitor and StartProgenitor
 				while(True):
 
 					#Extract the descendant
 					DescID = halodata[currSnapKey]["Descendant"][currIndex]
 
-					#Check to see if we have reached the RootDescendant of this branch
+					#Check to see if we have reached the EndDescendant of this branch
 					if(DescID==-1):
 						treedata[currSnapKey]["Descendant"][currIndex] = treedata[currSnapKey]["HaloID"][currIndex]
-						treedata[currSnapKey]["RootDescendant"][currIndex] = treedata[currSnapKey]["HaloID"][currIndex]
+						treedata[currSnapKey]["EndDescendant"][currIndex] = treedata[currSnapKey]["HaloID"][currIndex]
 						break
 
 						
@@ -156,7 +156,7 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 					#Set the tail and RootTail only if main progenitor or it involves a is a filler halo (has ID > 1e16)
 					if(halodata[descSnapKey]["Progenitor"][descIndex]==halodata[currSnapKey]["HaloID"][currIndex]):
-						treedata[descSnapKey]["RootProgenitor"][descIndex] = BranchRootTail
+						treedata[descSnapKey]["StartProgenitor"][descIndex] = BranchRootTail
 						treedata[descSnapKey]["Progenitor"][descIndex] = treedata[currSnapKey]["HaloID"][currIndex]
 
 					#Move up so the current halo is the descendant
@@ -164,11 +164,11 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 					currSnap = descSnap
 					currSnapKey = "Snap_%03d" %currSnap
 
-	print("Done seeting the Progenitors,Descendants and RootProgenitors in",time.time()-start)
+	print("Done seeting the Progenitors,Descendants and StartProgenitors in",time.time()-start)
 
 	print("Setting all the RootHead ID's")
 
-	#Now we have built the Progenitors, Descendants and RootProgenitors, we need to now go back down the branches setting the RootDescedant for the halos
+	#Now we have built the Progenitors, Descendants and StartProgenitors, we need to now go back down the branches setting the RootDescedant for the halos
 	for snap in range(numsnaps-1,-1,-1):
 
 		print("Doing snap",snap)
@@ -180,9 +180,9 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 
 
-			if(treedata[snapKey]["RootDescendant"][ihalo]):
+			if(treedata[snapKey]["EndDescendant"][ihalo]):
 
-				BranchRootDesc = treedata[snapKey]["RootDescendant"][ihalo] 
+				BranchRootDesc = treedata[snapKey]["EndDescendant"][ihalo] 
 
 				mainProgenSnap = snap
 				mainProgenSnapKey = "Snap_%03d" %mainProgenSnap
@@ -206,10 +206,10 @@ def convMilleniumToMTF(filename,numsnaps,snapKey,scalefactorKey,fieldsDict,HALOI
 
 					treedata = setProgenRootHeads(mainProgenSnap,mainhaloID,mainProgenIndex,BranchRootDesc,treedata,HALOIDVAL)
 
-					treedata[mainProgenSnapKey]["RootDescendant"][mainProgenIndex] = BranchRootDesc
+					treedata[mainProgenSnapKey]["EndDescendant"][mainProgenIndex] = BranchRootDesc
 
 
-	print("Done setting the RootDescendants in",time.time()-start)
+	print("Done setting the EndDescendants in",time.time()-start)
 
 	return treedata
 

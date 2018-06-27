@@ -117,9 +117,9 @@ def LoadETFCatalogue(filename,plotOpt):
 
 	#Lets see if the WWflag is set
 	if(plotOpt.WWflag):
-		requiredDatasets = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","Pos","HostHaloID","Radius","WWHaloFlag"]
+		requiredDatasets = ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","Mass","Pos","HostHaloID","Radius","WWHaloFlag"]
 	else:
-		requiredDatasets = ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","Pos","HostHaloID","Radius"]
+		requiredDatasets = ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","Mass","Pos","HostHaloID","Radius"]
 
 	# Lets check if the required datasets exist in the catalogue file for every snapshot
 	for snap in range(opt.startSnap,opt.endSnap+1):

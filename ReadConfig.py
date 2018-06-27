@@ -16,7 +16,6 @@ class plotOptions(object):
 		self.sizeLabel = "M$_{\rm vir}$ [10$^{10}$ M$_{\odot}$]"
 		self.maxSizeFontSize = 24
 		self.maxSizeFormat = "%.2f"
-		self.DistUnit = "Mpc"
 		self.logged = 0
 		self.plotNumRvir = 2.5
 		self.xLabel = "R$_{\rm#orbit}$/R$_{\rm#vir,parent}$"
@@ -124,7 +123,6 @@ class ETFoptions(object):
 		self.startSnap = 0
 		self.endSnap = 0
 		self.Nsnaps = 0
-		self.Munit = 1
 		self.h = 0.6751
 		self.boxsize = 0
 		self.HALOIDVAL = 1000000000000
