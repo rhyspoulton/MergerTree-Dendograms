@@ -79,27 +79,44 @@ def setsizeData(plotOpt,xposData,sizeData):
 	maxDist = np.max(xposData[:,0])
 
 	if(plotOpt.logged):
-		minSize = np.min(sizeData[sizeData>0])
 
+		#First to do log need to find the minimum point at normalize by this sizes don't go -ve
+		minSize = np.min(sizeData[sizeData>0])
 		sizeData = sizeData/minSize
 
+		#Now log the dataset
 		sizeData[sizeData>0] = np.log10(sizeData[sizeData>0])
 
-		sizeData=np.multiply(plotOpt.sizePoint,sizeData,casting="unsafe",dtype="float64")
+		#Normalize by the max size in the main branch
+		maxSize = np.max(sizeData[:,0])
+		sizeData = sizeData/maxSize
+
+		#Multiply by the size of points in the branch of interest
+		mainBranchSize=np.multiply(maxDist,sizeData[:,0],casting="unsafe",dtype="float64")
+
+		#Lets update the max dist:
+		maxDist +=np.max(sizeData[:,0])/2.0
+
+		#Set the correct scaling for the subpanels
+		sizeData[:,1:]= plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
+
+		sizeData[:,0] = mainBranchSize
+		print(np.min(sizeData[sizeData>0]),np.max(sizeData))
 
 	else:
 		#Find maximum for the data 
-		maxSize = np.max(sizeData)
+		maxSize = np.max(sizeData[:,0])
 
 		#Normalize the size data to this max size
 		sizeData = sizeData/maxSize
 
-		#Multiply by the size of points in the branch of interest, time by 1.4 so it takes up approixmatley 80% of the plot
+		#Multiply by the size of points in the branch of interest
 		mainBranchSize = np.multiply(maxDist,sizeData[:,0],casting="unsafe",dtype="float64")
 
 		#Lets update the max dist:
 		maxDist +=np.max(sizeData[:,0])/2.0
 
+		#Set the correct scaling for the subpanels
 		sizeData[:,1:]= plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
 
 		sizeData[:,0] = mainBranchSize
