@@ -17,6 +17,7 @@ class plotOptions(object):
 		self.maxSizeFontSize = 24
 		self.maxSizeFormat = "%.2f"
 		self.logged = 0
+		self.subBranchSizeFactor = 1.0
 		self.plotNumRvir = 2.5
 		self.xLabel = "R$_{\rm#orbit}$/R$_{\rm#vir,parent}$"
 		self.marker = "line"
@@ -71,6 +72,9 @@ class plotOptions(object):
 
 				elif(line[0]=="logged"):
 					self.logged = int(line[1])
+
+				elif(line[0]=="subBranchSizeFactor"):
+					self.subBranchSizeFactor = float(line[1])
 
 				elif(line[0]=="plotNumRvir"):
 					self.plotNumRvir = float(line[1])

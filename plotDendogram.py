@@ -98,7 +98,7 @@ def setsizeData(plotOpt,xposData,sizeData):
 		maxDist +=np.max(sizeData[:,0])/2.0
 
 		#Set the correct scaling for the subpanels
-		sizeData[:,1:]= plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
+		sizeData[:,1:]= plotOpt.subBranchSizeFactor * plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
 
 		sizeData[:,0] = mainBranchSize
 		print(np.min(sizeData[sizeData>0]),np.max(sizeData))
@@ -117,7 +117,7 @@ def setsizeData(plotOpt,xposData,sizeData):
 		maxDist +=np.max(sizeData[:,0])/2.0
 
 		#Set the correct scaling for the subpanels
-		sizeData[:,1:]= plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
+		sizeData[:,1:]=  plotOpt.subBranchSizeFactor * plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
 
 		sizeData[:,0] = mainBranchSize
 
@@ -374,22 +374,15 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 		axes[i].tick_params(axis='both', which='major', labelsize=23)
 		ax2 = axes[i].twiny()
-		# ax3 = ax.twiny()
 		ax2.set_xlim(axes[i].get_xlim())
-		# ax3.set_xlim(ax.get_xlim())
 		ax2.set_xticks([])
-		# ax3.set_xticks([])
 
 		if(i==0):
 			label = plotOpt.sizeLabel + "     " + plotOpt.maxSizeFormat %(maxBranchSize[i])
 		else:
 			label = plotOpt.maxSizeFormat %(maxBranchSize[i])
 		ax2.set_xlabel(label,fontsize = plotOpt.maxSizeFontSize, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
-		# new_fixed_axis = ax3.get_grid_helper().new_fixed_axis
-		# ax3.axis["top"] = new_fixed_axis(loc="top",axes=ax3,offset=(0, offset))
-		# ax3.axis["top"].toggle(all=True)
-		# ax3.axis["top"].label.set_fontsize(7)
-		# ax3.set_xlabel("%i" %RootTails[i])
+
 
 		if((numBranches>=4) & (i in branchSel)):
 			ibranchSel+=1
@@ -403,6 +396,9 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 	axes[0].set_xlabel("Euclidean distance [Mpc]",fontsize=25)
 	axes[0].margins(x=0.0)
 	axes[0].set_xlim(0,maxDist)
+
+	#Lets add another label below the final panel stating the multiplication factor for the sub branches
+	axes[-1].set_xlabel("X%.2f" %plotOpt.subBranchSizeFactor,fontsize=25,labelpad=50)
 
 	#Add the sub plot if desired and there are more than 4 branches
 	if((numBranches>=4) & (plotOpt.insetPlot)):

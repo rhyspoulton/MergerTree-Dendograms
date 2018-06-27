@@ -72,7 +72,10 @@ def WriteETFCatalogue(format,opt,treedata,Redshift,fieldsDict):
 			dataset = snapgroup.create_dataset(key,data =treedata[snapKey][key])
 
 			#Add an attribute to the dataset which gives the dataset's orginal name in the catalogue
-			dataset.attrs["origFieldName"] = fieldsDict[key]
+			if(format=="VEL"):
+				dataset.attrs["origFieldName"] = fieldsDict[key]
+			else:
+				dataset.attrs["origFieldName"] = fieldsDict[key][0]
 
 	hdffile.close()
 
