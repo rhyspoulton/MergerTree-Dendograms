@@ -366,12 +366,19 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 					if(mainBranchRadius[isnap]==0):
 						print("The main branch Radius cannot be found for snapshot",snap,"it will be interpolated from the data for this snapshot")
 						
+						#Interpolate the main branches radius
 						sel = mainBranchRadius>0
 						snaps = np.where(sel)[0]
 						f_Radius = interp1d(snaps,mainBranchRadius[sel])
 						mainBranchRadius[isnap] = f_Radius(isnap)
 
-	
+						#Interpolate the main branches position
+						for k in range(3):
+							sel = mainBranchPos[:,k]>0
+							snaps = np.where(sel)[0]
+							f_Radius = interp1d(snaps,mainBranchPos[sel,k])
+							mainBranchPos[isnap,k] = f_Radius(isnap)
+		
 					plotData["xposData"][isnap,ibranch] = np.sqrt(np.sum(((pos - mainBranchPos[isnap]))**2)) / mainBranchRadius[isnap]
 					
 
