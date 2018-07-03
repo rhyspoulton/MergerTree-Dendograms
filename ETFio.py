@@ -135,6 +135,11 @@ def LoadETFCatalogue(filename,plotOpt):
 		if("Redshift" not in hdffile[snapKey].attrs):
 			raise KeyError("There is no 'Redshift' attribute for each snapshot group, please use the 'CreateMTFCatalogue' to create the ETF catalogue")
 
+		#Make backwards compatible with the old ETF
+		if(("RootProgenitor" in hdffile[snapKey]) & ("RootDescendant" in hdffile[snapKey])):
+				requiredDatasets[1] = "RootProgenitor"
+				requiredDatasets[4] = "RootDescendant"
+
 		for key in requiredDatasets:
 
 			if(key not in hdffile[snapKey]):
@@ -186,7 +191,7 @@ def LoadETFCatalogue(filename,plotOpt):
 
 
 	if(plotOpt.overplotdata):
-		datasets = extraDatasets + ["HaloID","RootProgenitor","Progenitor","Descendant","RootDescendant","Mass","HostHaloID",",default HaloID: "]
+		datasets = extraDatasets + ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","Mass","HostHaloID",",default HaloID: "]
 		datasetstr =  " ".join(datasets)
 
 		overDataKey = input("Please select which dataset which is to be overplotted form the datasets:\n" + datasetstr)
@@ -208,7 +213,16 @@ def LoadETFCatalogue(filename,plotOpt):
 
 
 		for key in requiredDatasets:
-				treedata[snapKey][key] = np.array(hdffile[snapKey][key])
+
+				#Make backwards compatible with the old ETF
+				if(key=="RootProgenitor"):
+					treedata[snapKey]["StartProgenitor"] = np.array(hdffile[snapKey][key])
+
+				elif(key=="RootDescendant"):
+					treedata[snapKey]["EndDescendant"] = np.array(hdffile[snapKey][key])
+
+				else:
+					treedata[snapKey][key] = np.array(hdffile[snapKey][key])
 
 		treedata[snapKey]["SizeData"] = np.array(hdffile[snapKey][sizeDataKey])
 
