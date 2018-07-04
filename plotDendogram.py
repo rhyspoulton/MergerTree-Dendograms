@@ -101,7 +101,6 @@ def setsizeData(plotOpt,xposData,sizeData):
 		sizeData[:,1:]= plotOpt.subBranchSizeFactor * plotOpt.numSubplotsMain * (np.max(mainBranchSize) * plotOpt.plotNumRvir / maxDist) * (sizeData[:,1:]/np.max(sizeData[:,0]))
 
 		sizeData[:,0] = mainBranchSize
-		print(np.min(sizeData[sizeData>0]),np.max(sizeData))
 
 	else:
 		#Find maximum for the data 
@@ -378,7 +377,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 		ax2.set_xticks([])
 
 		if(i==0):
-			label = plotOpt.sizeLabel + "     " + plotOpt.maxSizeFormat %(maxBranchSize[i])
+			label = plotOpt.sizeLabel + "$_{\mathrm{,max}}$ ["+ plotOpt.sizeUnit + "]" + " "*plotOpt.maxSizeFontDist + plotOpt.maxSizeFormat %(maxBranchSize[i])
 		else:
 			label = plotOpt.maxSizeFormat %(maxBranchSize[i])
 		ax2.set_xlabel(label,fontsize = plotOpt.maxSizeFontSize, labelpad = 50)#,bbox=dict(facecolor='none', edgecolor='black',linewidth=2,pad=6))
@@ -413,7 +412,7 @@ def plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,SelID
 
 
 		inset.set_xlabel("Snapshot",fontsize=30)
-		inset.set_ylabel(plotOpt.sizeLabel.replace(",max",""),fontsize=30)
+		inset.set_ylabel(plotOpt.sizeLabel +" [" + plotOpt.sizeUnit +"]",fontsize=30)
 		inset.tick_params(axis='both', which='major', labelsize=25)
 
 	#Adjust the margins of the plot

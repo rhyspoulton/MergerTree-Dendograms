@@ -13,9 +13,11 @@ class plotOptions(object):
 		self.plotSubhaloBranches = 1
 		self.minNsnapsExist = 10
 		self.showBranchTypeLabel = 1
-		self.sizeLabel = "M$_{\rm vir}$ [10$^{10}$ M$_{\odot}$]"
+		self.sizeLabel = "M$_{\rm vir}$"
+		self.sizeUnit = "10$^{10}$ M$_{\odot}$"
 		self.maxSizeFontSize = 24
 		self.maxSizeFormat = "%.2f"
+		self.maxSizeFontDist = 10
 		self.logged = 0
 		self.subBranchSizeFactor = 1.0
 		self.plotNumRvir = 2.5
@@ -64,11 +66,17 @@ class plotOptions(object):
 				elif(line[0]=="sizeLabel"):
 					self.sizeLabel = line[1].replace("#"," ")
 
+				elif(line[0]=="sizeUnit"):
+					self.sizeUnit = line[1].replace("#"," ")
+
 				elif(line[0]=="maxSizeFormat"):
 					self.maxSizeFormat = line[1]
 
 				elif(line[0]=="maxSizeFontSize"):
 					self.maxSizeFontSize = int(line[1])
+
+				elif(line[0]=="maxSizeFontDist"):
+					self.maxSizeFontDist = int(line[1])
 
 				elif(line[0]=="logged"):
 					self.logged = int(line[1])
