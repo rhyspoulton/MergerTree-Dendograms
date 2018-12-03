@@ -39,6 +39,7 @@ if(sys.argv[1]=="VEL"):
 	fieldsDict["Descendant"] = "Head"
 	fieldsDict["EndDescendant"] = "RootHead"
 	fieldsDict["Pos"] = "Pos"
+	fieldsDict["Vel"] = "Vel"
 	fieldsDict["HostHaloID"] = "hostHaloID"
 	fieldsDict["Mass"] = opt.MassDef
 	fieldsDict["Radius"] = opt.RDef
@@ -55,7 +56,7 @@ if(sys.argv[1]=="VEL"):
 	print("Loading in the fields "+ " ".join(fieldsDict.values()))
 
 	#The filename to read the data from
-	Redshift,treedata = convVELOCIraptor.convVELOCIraptorToMTF(opt.startSnap,opt.endSnap,opt.VELfilename,fieldsDict)
+	Redshift,treedata = convVELOCIraptor.convVELOCIraptorToMTF(opt,fieldsDict)
 
 elif(sys.argv[1]=="AHF"):
 	####################################################################################

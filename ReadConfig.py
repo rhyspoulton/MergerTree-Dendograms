@@ -143,7 +143,8 @@ class ETFoptions(object):
 		self.RDef = ""
 		self.ExtraFields = []
 		self.ExtraFieldsDtype = []
-		self.VELfilename = ""
+		self.VELdir = ""
+		self.VELwalkabletreefilename = ""
 		self.WWflag = 0
 		self.AHFhalofilelist = ""
 		self.AHFtreefilelist = ""
@@ -202,9 +203,13 @@ class ETFoptions(object):
 
 				# VELOCIraptor specifics
 
-				elif(line[0]=="VELfilename"):
+				elif(line[0]=="VELdir"):
 					if(MTF=="VEL"):
-						self.VELfilename = line[1]
+						self.VELdir = line[1]
+
+				elif(line[0]=="VELwalkabletreefilename"):
+					if(MTF=="VEL"):
+						self.VELwalkabletreefilename = line[1]
 
 				elif(line[0]=="WWflag"):
 					self.WWflag = int(line[1])

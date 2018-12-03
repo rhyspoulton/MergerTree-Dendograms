@@ -1,27 +1,33 @@
 import numpy as np 
 import h5py
+import convTreesToETF.VELOCIraptor_Python_Tools.velociraptor_python_tools as VPT
 
+def convVELOCIraptorToMTF(opt,fieldsDict):
 
-def convVELOCIraptorToMTF(startSnap,endSnap,filename,fieldsDict):
+	treefields = ["ID","RootTail","Tail","Head","RootHead"]
 
 	#Load in the VELOCIraptor catalogue
-	Redshift,numsnaps,halodata = LoadVELOCIraptor(startSnap,endSnap,filename,fieldsDict.values())
+	Redshift,halodata,walkabletree = LoadVELOCIraptor(opt,treefields,fieldsDict.values())
 
 	treedata = {}
 
 	# Lets define a new dictionary for each snapshot
-	for snap in range(startSnap,endSnap+1):
+	for snap in range(opt.startSnap,opt.endSnap+1):
 
 		snapKey = "Snap_%03d" %snap
+		isnap = snap - opt.startSnap
 
 		treedata[snapKey]  = {}
 
 		#Loop over all the fields changing the keys to the MTF keys
 		for field in fieldsDict.keys():
 
+			if(fieldsDict[field] in treefields):
+				treedata[snapKey][field] = walkabletree[isnap].pop(fieldsDict[field])
+
 			#See if this dataset is the WWHalo Flag dataset
-			if(field=="WWHaloFlag"):
-				tmpdata = halodata[snapKey][fieldsDict[field]]
+			elif(field=="WWHaloFlag"):
+				tmpdata = halodata[isnap][fieldsDict[field]]
 
 				#Create a boolean dataset the same shape as the data
 				WWHaloFlag = np.zeros(tmpdata.shape,dtype=bool)
@@ -37,77 +43,81 @@ def convVELOCIraptorToMTF(startSnap,endSnap,filename,fieldsDict):
 			else:
 
 				# Add the dataset into the treedata
-				treedata[snapKey][field] = halodata[snapKey].pop(fieldsDict[field])
+				treedata[snapKey][field] = halodata[isnap].pop(fieldsDict[field])
 
 	return Redshift,treedata
 
 
-def LoadVELOCIraptor(startSnap,endSnap,filename,fieldKeys):
+def LoadVELOCIraptor(opt,treefields,fieldKeys):
 
-	h=0.6751
+	numsnaps = opt.endSnap+1 - opt.startSnap
 
-	# Open up the  hdf file
-	hdffile = h5py.File(filename,"r")
+	extractfields = []
+	for field in fieldKeys:
 
-	# Extract the number of snapshots from the file
-	numsnaps = endSnap-startSnap +1
+		#Skip if the field is in the treefields
+		if(field in treefields):
+			continue
 
-	# Setup a dictionary to load the data into
-	halodata = {}
+		if(field=="Pos"):
+			extractfields.extend(["Xc","Yc","Zc"])
+		elif(field=="Vel"):
+			extractfields.extend(["VXc","VYc","VZc"])
+		else:
+			extractfields.append(field)
 
-	Redshift = np.zeros(numsnaps,dtype=float)
+	Redshift = np.zeros(numsnaps)
 
-	# Read the header information
-	icomove = hdffile["Header"]["Units"].attrs["Comoving_or_Physical"][...]
-	length_unit_in_mpc = hdffile["Header"]["Units"].attrs["Length_unit_to_kpc"][...] / 1000.0
-	mass_unit_in_10E10solarmass = hdffile["Header"]["Units"].attrs["Mass_unit_to_solarmass"][...] /1e10
-	velocity_unit_in_kms = hdffile["Header"]["Units"].attrs["Velocity_unit_to_kms"][...]
+	halodata = [dict() for i in range(numsnaps)]
 
-	# Lets loop over snapshot and extract the necessary data sets
-	for snap in range(startSnap,endSnap+1):
+	#Read the VELOCIraptor properties files across the desired snapshots
+	for snap in range(opt.startSnap,opt.endSnap+1):
 
-		snapKey = "Snap_%03d" %snap
+		isnap = snap - opt.startSnap
+		filename = opt.VELdir + "/snapshot_%03d.VELOCIraptor" %snap
+		halodata[isnap],_ = VPT.ReadPropertyFile(filename,ibinary=2,desiredfields=extractfields)
 
-		isnap = snap -startSnap
+		#Lets check if the position is in comoving units
+		if(halodata[isnap]["UnitInfo"]["Comoving_or_Physical"]):
 
-		Redshift[isnap] = 1.0/np.float(hdffile[snapKey].attrs["scalefactor"]) - 1.0
+			#Convert to comoving 
+			halodata[isnap]["Xc"]*=halodata[isnap]["SimulationInfo"]["h_val"]/halodata[isnap]["SimulationInfo"]["ScaleFactor"]
+			halodata[isnap]["Yc"]*=halodata[isnap]["SimulationInfo"]["h_val"]/halodata[isnap]["SimulationInfo"]["ScaleFactor"]
+			halodata[isnap]["Zc"]*=halodata[isnap]["SimulationInfo"]["h_val"]/halodata[isnap]["SimulationInfo"]["ScaleFactor"]
 
-		# Every snapshot has a dictionary of the data
-		halodata[snapKey] = {}
+			#Lets convert all the types of radius
+			for field in halodata[isnap].keys():
+				if(field[0]=="R"):
+					halodata[isnap][field]*=halodata[isnap]["SimulationInfo"]["h_val"]/halodata[isnap]["SimulationInfo"]["ScaleFactor"]
 
-		#Loop over all the fields and extract them into memory
-		for field in fieldKeys:
-			
-			#Do all the nessary conversions into ETF units
-			if("Mass" in field):
-				halodata[snapKey][field] = hdffile[snapKey][field][:] * mass_unit_in_10E10solarmass
+		Redshift[snap-opt.startSnap] = 1.0/halodata[isnap]["SimulationInfo"]["ScaleFactor"] - 1.0
 
-			elif(field=="Pos"):
+		#Lets make sure all the units are in ETF
 
-				if(icomove):
-					halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["Xc"][:],hdffile[snapKey]["Yc"][:],hdffile[snapKey]["Zc"][:]]) * length_unit_in_mpc
-				else:
-					halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["Xc"][:],hdffile[snapKey]["Yc"][:],hdffile[snapKey]["Zc"][:]]) *h/np.float(hdffile[snapKey].attrs["scalefactor"]) * length_unit_in_mpc
+		#Distances in Mpc
+		halodata[isnap]["Xc"]*=halodata[isnap]["UnitInfo"]["Length_unit_to_kpc"]/1000 #Mpc
+		halodata[isnap]["Yc"]*=halodata[isnap]["UnitInfo"]["Length_unit_to_kpc"]/1000 #Mpc
+		halodata[isnap]["Zc"]*=halodata[isnap]["UnitInfo"]["Length_unit_to_kpc"]/1000 #Mpc
 
-			elif((field=="Radius") | (field[0:2]=="R_") | (field=="Rmax")) :
+		halodata[isnap]["Pos"] = np.column_stack([halodata[isnap].pop("Xc"),halodata[isnap].pop("Yc"),halodata[isnap].pop("Zc")])
 
-				if(icomove):
-					halodata[snapKey][field] =hdffile[snapKey][field][:] * length_unit_in_mpc
-				else:
-					halodata[snapKey][field] =hdffile[snapKey][field][:] *h/np.float(hdffile[snapKey].attrs["scalefactor"]) * length_unit_in_mpc
+		#Lets convert all the types of radius, velocity and masses
+		for field in halodata[isnap].keys():
+			if(field[0]=="R"):
+				halodata[isnap][field]*=halodata[isnap]["UnitInfo"]["Length_unit_to_kpc"]/1000 #Mpc
+			elif(field[0]=="M"):
+				halodata[isnap][field]*=halodata[isnap]["UnitInfo"]["Mass_unit_to_solarmass"]/1e10 #1e10 solarmasses
+			elif(field[0]=="V"):
+				halodata[isnap][field]*=halodata[isnap]["UnitInfo"]["Velocity_unit_to_kms"] #1e10 solarmasses
 
-			elif((field=="Vel") | (field=="Vmax") | (field=="sigV")):
+		halodata[isnap]["Vel"] = np.column_stack([halodata[isnap].pop("VXc"),halodata[isnap].pop("VYc"),halodata[isnap].pop("VZc")])
 
-				halodata[snapKey][field] = np.column_stack([hdffile[snapKey]["VXc"][:],hdffile[snapKey]["VYc"][:],hdffile[snapKey]["VZc"][:]]) * velocity_unit_in_kms
-
-			else:
-				halodata[snapKey][field] = hdffile[snapKey][field][:]
-
+	#Read in the walkable tree
+	walkabletree,_ = VPT.ReadWalkableHDFTree(opt.VELwalkabletreefilename,False)
 
 
-	hdffile.close()
 
-	return Redshift,numsnaps,halodata
+	return Redshift,halodata,walkabletree
 
 
 

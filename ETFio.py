@@ -43,7 +43,8 @@ def WriteETFCatalogue(format,opt,treedata,Redshift,fieldsDict):
 	#Add to the header which file the data is from
 	if(format=="VEL"):
 
-		headergroup.attrs["VELfilename"] = opt.VELfilename
+		headergroup.attrs["VELdir"] = opt.VELdir
+		headergroup.attrs["VELwalkabletreefilename"] = opt.VELwalkabletreefilename
 		headergroup.attrs["WWflag"] = opt.WWflag
 
 	elif(format=="AHF"):

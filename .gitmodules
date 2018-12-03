@@ -1,0 +1,3 @@
+[submodule "convTreesToETF/VELOCIraptor_Python_Tools"]
+	path = convTreesToETF/VELOCIraptor_Python_Tools
+	url = https://github.com/pelahi/VELOCIraptor_Python_Tools.git
