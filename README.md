@@ -5,6 +5,15 @@ Rhys Poulton
 
 This is a code to create the MergerTree Dendograms as presented in [Poulton et at. 2018](https://arxiv.org/abs/1809.06043).
 
+## Setup
+
+The code uses a submodule so for a fresh clone use:
+
+`git submodule update --init --recursive`
+
+to get the submodule or to update it use:
+
+`git submodule update --recursive --remote`
 
 ## Running
 
