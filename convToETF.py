@@ -89,7 +89,7 @@ elif(sys.argv[1]=="AHF"):
 
 	print("Loading in the fields "+ " ".join([field[0] for field in fieldsDict.values()]))
 
-	Redshift,treedata = convAHFparallel.convAHFToMTF(opt.startSnap,opt.endSnap,opt.AHFhalofilelist,opt.AHFtreefilelist,fieldsDict)
+	Redshift,treedata = convAHFparallel.convAHFToMTF(opt,fieldsDict)
 
 
 elif(sys.argv[1]=="Rock"):

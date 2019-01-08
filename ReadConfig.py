@@ -148,8 +148,10 @@ class ETFoptions(object):
 		self.WWflag = 0
 		self.AHFhalofilelist = ""
 		self.AHFtreefilelist = ""
+		self.sussingformat = 0
 		self.Rockfilelist = ""
 		self.Millfilename = ""
+		self.iverbose = 0
 
 		with open(filename,"r") as f:
 
@@ -224,6 +226,10 @@ class ETFoptions(object):
 					if(MTF=="AHF"):
 						self.AHFtreefilelist = line[1]
 
+				elif(line[0]=="sussingformat"):
+					if(MTF=="AHF"):
+						self.sussingformat = int(line[1])
+
 				# Rockstar specifics
 
 				elif(line[0]=="Rockfilelist"):
@@ -235,6 +241,9 @@ class ETFoptions(object):
 				elif(line[0]=="Millfilename"):
 					if(MTF=="Mill"):
 						self.Millfilename = line[1]
+
+				elif(line[0]=="iverbose"):
+					self.iverbose=int(line[1])
 
 				else:
 					raise OSError("Invalid config option %s, please only use the options in the sample config file" %line[0])
