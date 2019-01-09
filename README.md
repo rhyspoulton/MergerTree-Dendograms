@@ -20,7 +20,7 @@ to get the submodule or to update it use:
 First the halo catalogue needs to be converted into Efficient Tree Format (ETF) to be readable by the dendogram code, there exist conversion tools for VELOCIraptor, AHF and Rockstar. If the halo catalogue is in one of these formats then please edit the config file convToETF.cfg supplied in the directory so the necessary values are set. To load in the data from the different halo catalogues the requires different information depending on the catalogue:
 
 - **VELOCIraptor** - For this halo catalogue the code requires the unified halo catalogue produced from the python tools
-- **AHF** - Needs a file containing a list of the AHF \*halo output filenames and a file with the list of the M rgerTree \*_mtree filenames
+- **AHF** - Requires a file containing a list of the AHF \*halo output filenames and another file with the list of the MergerTree \*_mtree filenames. These lists need to be ascending in redshift.
 
 - **Rockstar** - A filelist containing the Consistent Trees *.dat filenames
 
