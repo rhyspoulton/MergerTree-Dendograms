@@ -345,7 +345,7 @@ def createPlotArrays(opt,plotOpt,treedata,SelIndex,outdir='',outputArrays=False)
 					plotData["xposData"][isnap,ibranch] = 1e-5
 				#Otherwise track its position relative to its start position
 				else:
-					plotData["xposData"][snap,ibranch] = np.sqrt((np.sum((pos - startpos))**2))
+					plotData["xposData"][isnap,ibranch] = np.sqrt((np.sum((pos - startpos))**2))
 
 				#Store the main branches IDs
 				mainBranchIDs[isnap] = haloID

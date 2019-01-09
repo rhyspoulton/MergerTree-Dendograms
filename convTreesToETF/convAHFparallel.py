@@ -107,7 +107,7 @@ def ReadInHaloFilesAcrossSnapshots(opt,fieldsDict):
 
 				elif(MTFfieldname=="Pos"):
 					splitfields  = fieldname.split(",")
-					halodata[snapKey][MTFfieldname]=np.column_stack([tmpData[splitfield] for splitfield in splitfields])/1000
+					halodata[snapKey][MTFfieldname]=np.column_stack([tmpData[splitfield] for splitfield in splitfields])
 
 				else:
 					splitfields  = fieldname.split(",")
@@ -672,8 +672,8 @@ def convToMTF(opt,halodata,treedata,HALOIDVAL = 1000000000000):
 		snapKey = "Snap_%03d" %snap
 
 		MTFdata[snapKey]["Mass"] = halodata[snapKey]["Mass"]/1e10
-		MTFdata[snapKey]["Radius"] = halodata[snapKey]["Radius"]
-		MTFdata[snapKey]["Pos"] = halodata[snapKey]["Pos"]
+		MTFdata[snapKey]["Radius"] = halodata[snapKey]["Radius"]/1000
+		MTFdata[snapKey]["Pos"] = halodata[snapKey]["Pos"]/1000
 		for extraField in extraFields:
 				MTFdata[snapKey][extraField]  = halodata[snapKey][extraField]
 
