@@ -205,6 +205,18 @@ def LoadETFCatalogue(filename,plotOpt):
 				overDataKey= "HaloID"
 
 
+	datasets = extraDatasets + ["Mass","Radius","HaloID",",default Mass: "]
+	datasetstr =  " ".join(datasets)
+
+	orderDataKey = input("Please select which dataset you would like to set the order in which the dendograms are built:\n" + datasetstr)
+	if (orderDataKey==""):
+		orderDataKey="Mass"
+	while(orderDataKey not in datasets):
+		orderDataKey = input(orderDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+		if (orderDataKey==""):
+			orderDataKey="Mass"
+
+
 	# Lets load in the data
 	for snap in range(opt.startSnap,opt.endSnap+1):
 
@@ -226,19 +238,22 @@ def LoadETFCatalogue(filename,plotOpt):
 					treedata[snapKey][key] = np.array(hdffile[snapKey][key])
 
 		treedata[snapKey]["SizeData"] = np.array(hdffile[snapKey][sizeDataKey])
-
 		treedata[snapKey]["ColData"] = np.array(hdffile[snapKey][colDataKey]) 
 		if(plotOpt.overplotdata):
 			treedata[snapKey]["OverPlotData"] = np.array(hdffile[snapKey][overDataKey]) 
 		
 
-
+	#Find the indexes which the dendograms are to be plotted
+	if(orderDataKey=="HaloID"):
+		indexes=np.arange(plotOpt.nPlot)
+	else:
+		indexes=np.argsort(hdffile["Snap_%03d" %opt.endSnap][orderDataKey])[::-1][:plotOpt.nPlot]
 
 
 	hdffile.close()
 
 	print("Done loading in data in",time.time()-start)
 
-	return opt,treedata
+	return opt,treedata,indexes
 
 

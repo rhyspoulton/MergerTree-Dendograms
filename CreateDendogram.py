@@ -14,11 +14,6 @@ if(len(sys.argv)<5):
 	raise SystemExit("Incorrect number of arguments parsed.\n \tUsage: CreateDendogram.py <ETF file> <Num plot> <output directory> plot_config.cfg\n")
 
 
-try:
-	nPlot = int(sys.argv[2])
-except ValueError:
-	raise SystemExit("Please parse a int for the number to be plotted")
-
 #Make the output directory if it does to exist
 outdir = sys.argv[3]
 if(os.path.isdir(outdir)==False):
@@ -27,12 +22,14 @@ if(os.path.isdir(outdir)==False):
 #Get the plot options
 plotOpt = plotOptions(sys.argv[4],outdir)
 
-#Load the data from the ETF catalogue
-opt,halodata = LoadETFCatalogue(sys.argv[1],plotOpt)
+#Update the number of dendograms to be plotted
+try:
+	plotOpt.nPlot = int(sys.argv[2])
+except ValueError:
+	raise SystemExit("Please parse a int for the number to be plotted")
 
-#Get the indexes of the nPlot largest branches
-endSnap = "Snap_%03d" %(opt.endSnap)
-indexes=np.argsort(halodata[endSnap]["Mass"])[::-1][:nPlot][::-1]
+#Load the data from the ETF catalogue and indexes which the dendograms are to be plotted
+opt,halodata,indexes = LoadETFCatalogue(sys.argv[1],plotOpt)
 
 #Loop over all the indexes producing dendograms
 for SelIndex in indexes:

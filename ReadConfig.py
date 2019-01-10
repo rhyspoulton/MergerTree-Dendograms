@@ -32,6 +32,7 @@ class plotOptions(object):
 		self.overplotdata = 0
 		self.insetPlot = 1
 		self.WWflag = 0
+		self.nplot = 100
 
 		with open(filename,"r") as f:
 
