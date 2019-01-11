@@ -32,13 +32,18 @@ class plotOptions(object):
 		self.overplotdata = 0
 		self.insetPlot = 1
 		self.WWflag = 0
+		self.promptFlag = 1
+		self.markerSizeDataset = "Mass"
+		self.orderDataset = "Mass"
+		self.markerColorDataset = "Radius"
+		self.overplotDataset = "HaloID"
 		self.nplot = 100
 
 		with open(filename,"r") as f:
 
 			for line in f:
 
-				if(line[0]=="#"): continue
+				if((line[0]=="#") | (line[0]=="!")): continue
 
 				line = line.replace(" ","")
 
@@ -123,6 +128,22 @@ class plotOptions(object):
 
 				elif(line[0]=="WWflag"):
 					self.WWflag = int(line[1])
+
+
+				elif(line[0]=="promptFlag"):
+					self.promptFlag = int(line[1])
+
+				elif(line[0]=="markerSizeDataset"):
+					self.markerSizeDataset = line[1]
+
+				elif(line[0]=="orderDataset"):
+					self.orderDataset = line[1]
+
+				elif(line[0]=="markerColorDataset"):
+					self.markerColorDataset = line[1]
+
+				elif(line[0]=="overplotDataset"):
+					self.overplotDataset = line[1]
 
 				else:
 					raise OSError("Invalid config option %s, please only use the options in the sample config file" %line[0])

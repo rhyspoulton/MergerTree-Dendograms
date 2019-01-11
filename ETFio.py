@@ -155,67 +155,77 @@ def LoadETFCatalogue(filename,plotOpt):
 		if(datasetKey not in requiredDatasets):
 			extraDatasets.append(datasetKey)
 
-	datasets = extraDatasets + ["Mass","Radius",",default Mass: "]
-	datasetstr =  " ".join(datasets)
+	#Only do this if the prompt flag is on
+	if(plotOpt.promptFlag):
+
+		datasets = extraDatasets + ["Mass","Radius",",default Mass: "]
+		datasetstr =  " ".join(datasets)
 
 
-	sizeDataKey = input("Please select which dataset you would like to set the size of the points from the datasets:\n" + datasetstr)
-	if (sizeDataKey==""):
-		sizeDataKey="Mass"
-
-	while(sizeDataKey not in datasets):
-		sizeDataKey = input(sizeDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+		sizeDataKey = input("Please select which dataset you would like to set the size of the points from the datasets:\n" + datasetstr)
 		if (sizeDataKey==""):
 			sizeDataKey="Mass"
 
+		while(sizeDataKey not in datasets):
+			sizeDataKey = input(sizeDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+			if (sizeDataKey==""):
+				sizeDataKey="Mass"
 
-	if(plotOpt.plotColorBar==1):
-		datasets = extraDatasets + ["Mass","Radius",",default Radius: "]
-		datasetstr =  " ".join(datasets)
 
-		colDataKey = input("Please select which dataset you would like to set the colour of the points from the datasets:\n" + datasetstr)
-		if(colDataKey==""):
-			colDataKey= "Radius"
+		if(plotOpt.plotColorBar==1):
+			datasets = extraDatasets + ["Mass","Radius",",default Radius: "]
+			datasetstr =  " ".join(datasets)
 
-		while(colDataKey not in datasets):
-			colDataKey = input(colDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+			colDataKey = input("Please select which dataset you would like to set the colour of the points from the datasets:\n" + datasetstr)
 			if(colDataKey==""):
 				colDataKey= "Radius"
 
-	else:
-		print("Setting the HostHaloID as the colour, please set plotColorBar = 1 in plot_config.cfg if you would like a different dataset to be used")
-		colDataKey= "HostHaloID"
+			while(colDataKey not in datasets):
+				colDataKey = input(colDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+				if(colDataKey==""):
+					colDataKey= "Radius"
 
-	if((plotOpt.plotColorBar==0) & (colDataKey!="HostHaloID")):
-		raise SystemExit("If using different field from HostHaloID, please set plotColorBar = 1 in the Plot_config.cfg")
+		else:
+			print("Setting the HostHaloID as the colour, please set plotColorBar = 1 in plot_config.cfg if you would like a different dataset to be used")
+			colDataKey= "HostHaloID"
+
+		if((plotOpt.plotColorBar==0) & (colDataKey!="HostHaloID")):
+			raise SystemExit("If using different field from HostHaloID, please set plotColorBar = 1 in the Plot_config.cfg")
 
 
 
-	if(plotOpt.overplotdata):
-		datasets = extraDatasets + ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","Mass","HostHaloID",",default HaloID: "]
+		if(plotOpt.overplotdata):
+			datasets = extraDatasets + ["HaloID","StartProgenitor","Progenitor","Descendant","EndDescendant","Mass","HostHaloID",",default HaloID: "]
+			datasetstr =  " ".join(datasets)
+
+			overDataKey = input("Please select which dataset which is to be overplotted form the datasets:\n" + datasetstr)
+			if(overDataKey==""):
+					overDataKey= "HaloID"
+
+			while(overDataKey not in datasets):
+				overDataKey = input(overDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+				if(overDataKey==""):
+					overDataKey= "HaloID"
+
+
+		datasets = extraDatasets + ["Mass","Radius","HaloID",",default Mass: "]
 		datasetstr =  " ".join(datasets)
 
-		overDataKey = input("Please select which dataset which is to be overplotted form the datasets:\n" + datasetstr)
-		if(overDataKey==""):
-				overDataKey= "HaloID"
-
-		while(overDataKey not in datasets):
-			overDataKey = input(overDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
-			if(overDataKey==""):
-				overDataKey= "HaloID"
-
-
-	datasets = extraDatasets + ["Mass","Radius","HaloID",",default Mass: "]
-	datasetstr =  " ".join(datasets)
-
-	orderDataKey = input("Please select which dataset you would like to set the order in which the dendograms are built:\n" + datasetstr)
-	if (orderDataKey==""):
-		orderDataKey="Mass"
-	while(orderDataKey not in datasets):
-		orderDataKey = input(orderDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+		orderDataKey = input("Please select which dataset you would like to set the order in which the dendograms are built:\n" + datasetstr)
 		if (orderDataKey==""):
 			orderDataKey="Mass"
+		while(orderDataKey not in datasets):
+			orderDataKey = input(orderDataKey+" is not avalible please choose from the datasets:\n" + datasetstr)
+			if (orderDataKey==""):
+				orderDataKey="Mass"
 
+	else:
+
+		#Otherwise lets get it from the configuration file
+		sizeDataKey = plotOpt.markerSizeDataset
+		colDataKey = plotOpt.markerColorDataset
+		overplotDataset = plotOpt.overplotDataset
+		orderDataKey = plotOpt.orderDataset
 
 	# Lets load in the data
 	for snap in range(opt.startSnap,opt.endSnap+1):
