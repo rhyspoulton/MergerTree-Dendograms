@@ -75,9 +75,12 @@ elif(sys.argv[1]=="AHF"):
 	fieldsDict["EndDescendant"] = ["","int64"]
 	fieldsDict["Pos"] = ["Xc(6),Yc(7),Zc(8)","float32"]
 	fieldsDict["HostHaloID"] = ["hostHalo(2)","int64"]
-	fieldsDict["origID"] = ["ID(1)","int64"]
 	fieldsDict["Mass"] = [opt.MassDef,"float32"]
 	fieldsDict["Radius"] = [opt.RDef,"float32"]
+
+	# If the haloIDs aren't in the sussing format then the original ID's needs to be saved
+	if(opt.sussingformat==False):
+		fieldsDict["origID"] = ["ID(1)","int64"]
 
 	if(len(opt.ExtraFields)!=len(opt.ExtraFieldsDtype)):
 		raise SystemExit("Please input the datatype for each of the extra fields")

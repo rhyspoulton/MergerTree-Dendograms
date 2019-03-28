@@ -209,20 +209,27 @@ def ReadHaloMergerTreeAcrossSnapshots_SussingFormat(opt,halodata):
 					raise SystemExit("The tree cannot be read, please check if the tree is in the MergerTree format. If so set sussingformat = 0 in convToETF.cfg")
 				break
 			if(np.int(Num_progen) > 0):
+
 				HostID = np.int64(HostID)
+				haloSnap = np.int64(HostID/opt.HALOIDVAL)
 				haloIndex = np.int64(HostID%opt.HALOIDVAL-1)
-				treedata[snapKey]["HaloID"][haloIndex] = HostID
-				treedata[snapKey]["HaloIndex"][haloIndex] = haloIndex
-				treedata[snapKey]["Num_progen"][haloIndex]  = np.int32(Num_progen)
+				haloSnapKey = "Snap_%03d" %haloSnap
+
+				treedata[haloSnapKey]["HaloID"][haloIndex] = HostID
+				treedata[haloSnapKey]["HaloIndex"][haloIndex] = haloIndex
+				treedata[haloSnapKey]["Num_progen"][haloIndex]  = np.int32(Num_progen)
 				for iprogen in range(int(Num_progen)):
 					[SatID]=treefile.readline().strip().split("  ")
 					SharedNpart = 0
 					if(iprogen==0):
-						treedata[snapKey]["mainProgenitor"][haloIndex] = np.int64(SatID)
-					treedata[snapKey]["Progenitors"][haloIndex].append(np.int64(SatID))
-				treedata[snapKey]["Progenitors"][haloIndex] = np.array(treedata[snapKey]["Progenitors"][haloIndex])
+						treedata[haloSnapKey]["mainProgenitor"][haloIndex] = np.int64(SatID)
+					treedata[haloSnapKey]["Progenitors"][haloIndex].append(np.int64(SatID))
+				treedata[haloSnapKey]["Progenitors"][haloIndex] = np.array(treedata[snapKey]["Progenitors"][haloIndex],dtype=np.int64)
 				j+=1
 
+
+	for snap in range(opt.endSnap,opt.startSnap,-1):
+		snapKey = "Snap_%03d" %snap
 		treedata[snapKey]["mainProgenitorSnap"][:] = np.array(treedata[snapKey]["mainProgenitor"]/opt.HALOIDVAL,dtype="int32")
 		treedata[snapKey]["mainProgenitorIndex"][:] = np.array(treedata[snapKey]["mainProgenitor"]%opt.HALOIDVAL-1,dtype="int64")
 
