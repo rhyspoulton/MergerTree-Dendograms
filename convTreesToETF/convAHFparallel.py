@@ -224,7 +224,7 @@ def ReadHaloMergerTreeAcrossSnapshots_SussingFormat(opt,halodata):
 					if(iprogen==0):
 						treedata[haloSnapKey]["mainProgenitor"][haloIndex] = np.int64(SatID)
 					treedata[haloSnapKey]["Progenitors"][haloIndex].append(np.int64(SatID))
-				treedata[haloSnapKey]["Progenitors"][haloIndex] = np.array(treedata[snapKey]["Progenitors"][haloIndex],dtype=np.int64)
+				treedata[haloSnapKey]["Progenitors"][haloIndex] = np.array(treedata[haloSnapKey]["Progenitors"][haloIndex],dtype=np.int64)
 				j+=1
 
 
