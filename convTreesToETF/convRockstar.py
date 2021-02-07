@@ -114,7 +114,7 @@ def LoadRockstarIntoMTF(snapColName,numProgName,redshiftColName,startSnap,endSna
 			while(line[0]!="#"):
 				line = line.strip().split()
 
-				data = {fieldnames[j]:fielddtypes[j](line[indx]) for j,indx in enumerate(colReadIndx)}
+				data = {fieldnames[j]:fielddtypes[j](float(line[indx])) for j,indx in enumerate(colReadIndx)}
 
 
 				mainsnap = data[snapColName]
@@ -302,6 +302,13 @@ def convToMTF(startSnap,endSnap,fieldsDict,MTFdata,HALOIDVAL=1000000000000):
 
 
 	print("Done setting StartProgenitors in",time.time()-totstart)
+
+	for snap in range(startSnap,endSnap+1):
+
+		snapKey = "Snap_%03d" %snap
+
+		MTFdata[snapKey]["Radius"]/=1000
+		MTFdata[snapKey]["Mass"]/=1e10
 
 
 

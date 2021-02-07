@@ -146,11 +146,13 @@ elif(sys.argv[1]=="Mill"):
 	fieldsDict = {}
 	# The required Keys, do not change these!
 	fieldsDict["HaloID"] = "/haloTrees/nodeIndex"
-	fieldsDict["Progenitor"] = "/haloTrees/mainProgenitorIndex"
 	fieldsDict["Descendant"] = "/haloTrees/descendantIndex"
-	fieldsDict["M200crit"]  = "/haloTrees/nodeMass"
+	fieldsDict["Progenitor"] = "/haloTrees/mainProgenitorIndex"
+	fieldsDict["Mass"] = opt.MassDef
+	fieldsDict["Radius"] = opt.RDef
 	fieldsDict["Pos"] = "/haloTrees/position"
 	fieldsDict["HostHaloID"] = "/haloTrees/hostIndex"
+	fieldsDict["isMainProgenitor"] = "/haloTrees/isMainProgenitor"
 
 	#Add in the extra fields into the fieldsDict
 	for field in opt.ExtraFields:
@@ -160,7 +162,16 @@ elif(sys.argv[1]=="Mill"):
 	snapKey = "/haloTrees/snapshotNumber"
 	scalefactorKey = "/outputTimes/redshift"
 
-	treedata = convMillenium.convMilleniumToMTF(opt.Millfilename,opt.Nsnaps,snapKey,scalefactorKey,fieldsDict)
+	treedata,Redshift = convMillenium.convMilleniumToMTF(opt.Millfilename,opt.Nsnaps,snapKey,scalefactorKey,fieldsDict)
+
+	fieldsDict["StartProgenitor"] = ""
+	fieldsDict["EndDescendant"] = ""
+	
+
+	fieldsDict["DescendantIndex"] = ""
+	fieldsDict["DescendantSnap"] = ""
+	fieldsDict["ProgenitorIndex"] = ""
+	fieldsDict["ProgenitorSnap"] = ""
 
 
 
