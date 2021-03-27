@@ -38,6 +38,7 @@ for SelIndex in indexes:
 
 	#Check if there is anythin to plot
 	if(len(branchIndicator)==0):
+		print("After applying the selection there this nothing to plot")
 		continue
 
 	plotDendogram(plotOpt,plotData,depthIndicator,branchIndicator,sortIndx,halodata["Snap_%03d" %opt.endSnap]["HaloID"][SelIndex],mainBranchIDs)

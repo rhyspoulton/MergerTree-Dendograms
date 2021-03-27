@@ -56,6 +56,10 @@ def WriteETFCatalogue(format,opt,treedata,Redshift,fieldsDict):
 
 		headergroup.attrs["Rockfilelist"] = opt.Rockfilelist
 
+	elif(format=="Dtrees"):
+
+		headergroup.attrs["Dtreesfilename"] = opt.Dtreesfilename
+
 	#Create a snapshot group
 	for snap in range(opt.startSnap,opt.endSnap+1):
 
@@ -70,10 +74,15 @@ def WriteETFCatalogue(format,opt,treedata,Redshift,fieldsDict):
 		#Put all the data in the snapshot group.
 		for key in treedata[snapKey].keys():
 
-			dataset = snapgroup.create_dataset(key,data =treedata[snapKey][key])
+			if("/haloTrees/" in key):
+				datasetKey = key.replace("/haloTrees/","")
+			else:
+				datasetKey = key
+
+			dataset = snapgroup.create_dataset(datasetKey,data =treedata[snapKey][key])
 
 			#Add an attribute to the dataset which gives the dataset's orginal name in the catalogue
-			if(format=="VEL"):
+			if((format=="VEL") | (format=="Dtrees")):
 				dataset.attrs["origFieldName"] = fieldsDict[key]
 			else:
 				dataset.attrs["origFieldName"] = fieldsDict[key][0]

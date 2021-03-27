@@ -172,7 +172,7 @@ class ETFoptions(object):
 		self.AHFtreefilelist = ""
 		self.sussingformat = 0
 		self.Rockfilelist = ""
-		self.Millfilename = ""
+		self.Dtreesfilename = ""
 		self.iverbose = 0
 
 		with open(filename,"r") as f:
@@ -253,16 +253,14 @@ class ETFoptions(object):
 						self.sussingformat = int(line[1])
 
 				# Rockstar specifics
-
 				elif(line[0]=="Rockfilelist"):
 					if(MTF=="Rock"):
 						self.Rockfilelist = line[1]
 
-				# Millenium specifics
-
-				elif(line[0]=="Millfilename"):
-					if(MTF=="Mill"):
-						self.Millfilename = line[1]
+				# Dtrees specifics
+				elif(line[0]=="Dtreesfilename"):
+					if(MTF=="Dtrees"):
+						self.Dtreesfilename = line[1]
 
 				elif(line[0]=="iverbose"):
 					self.iverbose=int(line[1])

@@ -1,12 +1,12 @@
 import sys
 sys.path.append(sys.argv[0].replace("convToETF.py",""))
-from convTreesToETF import convVELOCIraptor,convAHFparallel,convMillenium,convRockstar
+from convTreesToETF import *
 from ETFio import WriteETFCatalogue
 from ReadConfig import  ETFoptions
 import h5py
 import os
 
-availableConverters = ["VEL","AHF","Rock","Mill"]
+availableConverters = ["VEL","AHF","Rock","Dtrees"]
 
 if(len(sys.argv)<3):
 	raise SystemExit("No format of the merger tree parse. Usage: convToETF.py <merger tree format> <convToETF.cfg>")
@@ -56,7 +56,7 @@ if(sys.argv[1]=="VEL"):
 	print("Loading in the fields "+ " ".join(fieldsDict.values()))
 
 	#The filename to read the data from
-	Redshift,treedata = convVELOCIraptor.convVELOCIraptorToMTF(opt,fieldsDict)
+	Redshift,treedata = convVELOCIraptorToMTF(opt,fieldsDict)
 
 elif(sys.argv[1]=="AHF"):
 	####################################################################################
@@ -92,7 +92,7 @@ elif(sys.argv[1]=="AHF"):
 
 	print("Loading in the fields "+ " ".join([field[0] for field in fieldsDict.values()]))
 
-	Redshift,treedata = convAHFparallel.convAHFToMTF(opt,fieldsDict)
+	Redshift,treedata = convAHFToMTF(opt,fieldsDict)
 
 
 elif(sys.argv[1]=="Rock"):
@@ -132,14 +132,14 @@ elif(sys.argv[1]=="Rock"):
 	redshiftColName= "scale(0)"
 
 
-	Redshift,treedata = convRockstar.convRockstarToMTF(snapColName,numProgName,redshiftColName,opt.startSnap ,opt.endSnap,opt.Rockfilelist,fieldsDict)
+	Redshift,treedata = convRockstarToMTF(snapColName,numProgName,redshiftColName,opt.startSnap ,opt.endSnap,opt.Rockfilelist,fieldsDict)
 
 
-elif(sys.argv[1]=="Mill"):
+elif(sys.argv[1]=="Dtrees"):
 	####################################################################################
 
 
-					#Converting Millenium format
+					#Converting D-trees format
 
 	####################################################################################
 
@@ -147,10 +147,13 @@ elif(sys.argv[1]=="Mill"):
 	# The required Keys, do not change these!
 	fieldsDict["HaloID"] = "/haloTrees/nodeIndex"
 	fieldsDict["Descendant"] = "/haloTrees/descendantIndex"
+	fieldsDict["DescendantSnap"] = "/haloTrees/descendantSnapshot"
 	fieldsDict["Progenitor"] = "/haloTrees/mainProgenitorIndex"
 	fieldsDict["Mass"] = opt.MassDef
 	fieldsDict["Radius"] = opt.RDef
 	fieldsDict["Pos"] = "/haloTrees/position"
+	fieldsDict["Vel"] = "/haloTrees/velocity"
+	fieldsDict["AngMom"] = "/haloTrees/angularMomentum"
 	fieldsDict["HostHaloID"] = "/haloTrees/hostIndex"
 	fieldsDict["isMainProgenitor"] = "/haloTrees/isMainProgenitor"
 
@@ -162,17 +165,14 @@ elif(sys.argv[1]=="Mill"):
 	snapKey = "/haloTrees/snapshotNumber"
 	scalefactorKey = "/outputTimes/redshift"
 
-	treedata,Redshift = convMillenium.convMilleniumToMTF(opt.Millfilename,opt.Nsnaps,snapKey,scalefactorKey,fieldsDict)
+	treedata,Redshift = convDtreesToMTF(opt,snapKey,scalefactorKey,fieldsDict)
 
 	fieldsDict["StartProgenitor"] = ""
 	fieldsDict["EndDescendant"] = ""
-	
-
 	fieldsDict["DescendantIndex"] = ""
 	fieldsDict["DescendantSnap"] = ""
 	fieldsDict["ProgenitorIndex"] = ""
 	fieldsDict["ProgenitorSnap"] = ""
-
 
 
 WriteETFCatalogue(sys.argv[1],opt,treedata,Redshift,fieldsDict)
